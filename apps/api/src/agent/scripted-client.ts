@@ -8,7 +8,7 @@ import type { ModelClient, ModelRequest, ModelResponse } from './loop.js';
  */
 export class ScriptedModelClient implements ModelClient {
   calls = 0;
-  async create(req: ModelRequest): Promise<ModelResponse> {
+  async create(req: ModelRequest, onText?: (delta: string) => void): Promise<ModelResponse> {
     this.calls++;
     const first = req.messages[0]!;
     const prompt = Array.isArray(first.content)
@@ -46,8 +46,10 @@ export class ScriptedModelClient implements ModelClient {
     } catch {
       /* keep default */
     }
+    const text = `Proposition (assistant hors ligne) : ${best}. Les règles utilisées sont des règles de TEST, non officielles.`;
+    for (const w of text.match(/\S+\s*/g) ?? []) onText?.(w);
     return {
-      content: [{ type: 'text', text: `Proposition (assistant hors ligne) : ${best}.`, citations: null } as Anthropic.Beta.BetaContentBlock],
+      content: [{ type: 'text', text, citations: null } as Anthropic.Beta.BetaContentBlock],
       stop_reason: 'end_turn',
       usage: { input_tokens: 1200, output_tokens: 80 },
     };

@@ -189,6 +189,8 @@ class _Builder:
         storey.Elevation = float(st.elevationM)
         self.place(storey, building, st.elevationM)
 
+        if st.footprint is not None:
+            profile = self.profile(st.footprint, name=f"{block.name} {name} footprint")
         space = self.entity("IfcSpace", f"space:{key}", name=f"{block.name} {name}", predefined_type="SPACE")
         space.LongName = st.use
         space.CompositionType = "ELEMENT"

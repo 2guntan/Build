@@ -108,3 +108,20 @@ describe('projects, plot and options', () => {
     expect(save.body.evaluation.yield.margin).toBeTypeOf('number');
   });
 });
+
+describe('demo project', () => {
+  it('creates a plot, labelled synthetic context and three options', async () => {
+    const c = client(ctx.app, (await signUp(ctx.app)).cookie);
+    const p = await c.post('/api/v1/projects/demo', { locale: 'fr' });
+    expect(p.status).toBe(201);
+    const opts = await c.get(`/api/v1/projects/${p.body.id}/options`);
+    expect(opts.body).toHaveLength(3);
+    const cx = await c.get(`/api/v1/projects/${p.body.id}/context`);
+    expect(cx.body.buildings.length).toBeGreaterThan(50);
+    expect(cx.body.buildings.every((b: { dataSource: string }) => b.dataSource === 'demo-synthetic')).toBe(true);
+    for (const o of opts.body) {
+      const full = await c.get(`/api/v1/options/${o.id}`);
+      expect(full.body.evaluation.compliance.compliant).toBe(true);
+    }
+  });
+});

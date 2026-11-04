@@ -116,6 +116,7 @@ export function solve(input: SolveInput): SolveResult {
         groundHeightM: ground,
         typicalHeightM: typical,
         parking,
+        ...(t === 'podium_tower' ? { stepBacks: [{ fromFloor: 2, inset: Math.max(3, Math.round(tp.depth * 0.25 * 2) / 2) }] } : {}),
       });
     const site = { plot, edgeClasses: input.edgeClasses, buildable };
     let recipe = make({ kind: 'none', spaces: 0, area: 'auto' });

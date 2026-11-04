@@ -23,7 +23,7 @@ describe('i18n', () => {
     const missing: string[] = [];
     for (const f of files(join(import.meta.dirname, '../src'))) {
       const src = readFileSync(f, 'utf8');
-      for (const m of src.matchAll(/\bt\('([a-zA-Z0-9_.]+)'/g)) if (!keys.has(m[1]!)) missing.push(`${f}: ${m[1]}`);
+      for (const m of src.matchAll(/\bt\('([a-zA-Z0-9_.]+)'/g)) if (!keys.has(m[1]!) && !keys.has(`${m[1]}_one`)) missing.push(`${f}: ${m[1]}`);
     }
     expect(missing).toEqual([]);
   });

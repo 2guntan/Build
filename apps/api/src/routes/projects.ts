@@ -28,6 +28,7 @@ import { requireUser, type Deps } from '../app.js';
 import { projectFor } from '../services/access.js';
 import { loadAssumptions, projectContext } from '../services/evaluation.js';
 import { createOption } from '../services/options.js';
+import { createDemoProject } from '../services/demo.js';
 import { frameFor, outerRingLonLat, plotSummary, validatePlotGeoJson, type PlotRow } from '../services/site.js';
 
 type P = { Params: { id: string } };
@@ -43,7 +44,12 @@ async function defaultRuleSet(deps: Deps, jurisdictionId: string) {
 async function projectDto(deps: Deps, p: typeof project.$inferSelect) {
   const ctx = await projectContext(deps.db, deps.cfg, p.id).catch(() => null);
   const [pl] = await deps.db.select().from(plot).where(eq(plot.projectId, p.id));
-  const opts = await deps.db.select({ head: designOption.headVersionId }).from(designOption).where(and(eq(designOption.projectId, p.id), eq(designOption.isArchived, false)));
+  const opts = await deps.db
+    .select({ head: designOption.headVersionId, thumb: designOption.thumbnailKey })
+    .from(designOption)
+    .where(and(eq(designOption.projectId, p.id), eq(designOption.isArchived, false)))
+    .orderBy(designOption.createdAt);
+  const thumbKey = opts.find((o) => o.thumb)?.thumb;
   const heads = opts.map((o) => o.head).filter((h): h is string => !!h);
   const evs = heads.length ? await deps.db.select({ y: evaluation.yield }).from(evaluation).where(inArray(evaluation.recipeVersionId, heads)) : [];
   const margins = evs.map((e) => e.y as { complete: boolean; margin: number }).filter((y) => y.complete).map((y) => y.margin);
@@ -60,6 +66,8 @@ async function projectDto(deps: Deps, p: typeof project.$inferSelect) {
     plot: pl ? plotSummary(pl as PlotRow, ctx?.zone ?? null) : null,
     bestMargin: margins.length ? Math.max(...margins) : null,
     ruleSetIsTest: ctx?.isTest ?? false,
+    thumbnailUrl: thumbKey ? await deps.storage.signedUrl(thumbKey) : null,
+    optionCount: opts.length,
   };
 }
 
@@ -98,6 +106,16 @@ export function registerProjectRoutes(app: FastifyInstance, deps: Deps) {
       .returning();
     reply.status(201);
     return projectDto(deps, p!);
+  });
+
+  app.post('/api/v1/projects/demo', async (req, reply) => {
+    const u = await requireUser(deps, req);
+    const mem = (await db.select().from(membership).where(eq(membership.userId, u.userId))).find((m) => m.role !== 'viewer');
+    if (!mem) throw new ProblemError('FORBIDDEN');
+    const locale = (req.body as { locale?: string } | undefined)?.locale === 'en' ? 'en' : 'fr';
+    const p = await createDemoProject(db, deps.cfg, { orgId: mem.orgId, userId: u.userId, locale });
+    reply.status(201);
+    return projectDto(deps, p);
   });
 
   app.get<P>('/api/v1/projects/:id', async (req) => {
@@ -247,7 +265,8 @@ export function registerProjectRoutes(app: FastifyInstance, deps: Deps) {
   app.get<P>('/api/v1/projects/:id/options', async (req) => {
     const u = await requireUser(deps, req);
     const { project: p } = await projectFor(db, u, req.params.id);
-    return db.select().from(designOption).where(and(eq(designOption.projectId, p.id), eq(designOption.isArchived, false))).orderBy(designOption.createdAt);
+    const rows = await db.select().from(designOption).where(and(eq(designOption.projectId, p.id), eq(designOption.isArchived, false))).orderBy(designOption.createdAt);
+    return Promise.all(rows.map(async (o) => ({ ...o, thumbnailUrl: o.thumbnailKey ? await deps.storage.signedUrl(o.thumbnailKey) : null })));
   });
 
   app.post<P>('/api/v1/projects/:id/options', async (req, reply) => {

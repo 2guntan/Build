@@ -1,4 +1,4 @@
-import { area, extrudeRing, hashValue, normalizeRing, roundRing, roundTo } from '@fs/geometry';
+import { area, extrudeRing, hashValue, inset, normalizeRing, roundRing, roundTo, type Ring } from '@fs/geometry';
 import {
   resolveNum,
   type Block,
@@ -35,6 +35,20 @@ function buildBlock(block: Block, recipe: Recipe, site: SiteInput, withMesh: boo
   const floors = Math.max(0, Math.round(resolveNum(block.floors, recipe.params)));
   const gh = resolveNum(block.floorHeights.ground, recipe.params);
   const th = resolveNum(block.floorHeights.typical, recipe.params);
+  const steps = (block.stepBacks ?? [])
+    .map((sb) => ({ fromFloor: sb.fromFloor, inset: resolveNum(sb.inset, recipe.params) }))
+    .sort((a, b) => a.fromFloor - b.fromFloor);
+  const stepCache = new Map<number, Ring | null>();
+  const footprintAt = (i: number): Ring => {
+    let d = 0;
+    for (const s of steps) if (i >= s.fromFloor) d = s.inset;
+    if (d <= 0) return footprint;
+    if (!stepCache.has(d)) {
+      const r = inset(footprint, d);
+      stepCache.set(d, r && r.length >= 3 ? roundRing(r) : null);
+    }
+    return stepCache.get(d) ?? footprint;
+  };
   const storeys: StoreyResult[] = [];
   let z = 0;
   for (let i = 0; i < floors; i++) {
@@ -49,15 +63,17 @@ function buildBlock(block: Block, recipe: Recipe, site: SiteInput, withMesh: boo
         unitMix = u.unitMix;
       }
     }
+    const fpI = footprintAt(i);
     const s: StoreyResult = {
       index: i,
       elevationM: roundTo(z),
       heightM: roundTo(h),
-      areaM2: roundTo(fpArea, 0.01),
+      areaM2: roundTo(fpI === footprint ? fpArea : area(fpI), 0.01),
       use,
       efficiency,
     };
     if (unitMix) s.unitMix = unitMix;
+    if (fpI !== footprint) s.footprint = fpI;
     storeys.push(s);
     z += h;
   }

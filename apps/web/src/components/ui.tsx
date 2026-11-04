@@ -42,10 +42,10 @@ export function Badge({ tone = 'neutral', children }: { tone?: 'neutral' | 'ok' 
       className={cx(
         'inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium',
         tone === 'neutral' && 'bg-surface text-muted',
-        tone === 'ok' && 'bg-green-50 text-ok',
-        tone === 'warn' && 'bg-amber-50 text-warn',
-        tone === 'bad' && 'bg-red-50 text-bad',
-        tone === 'accent' && 'bg-teal-50 text-accent',
+        tone === 'ok' && 'bg-ok/10 text-ok',
+        tone === 'warn' && 'bg-warn/10 text-warn',
+        tone === 'bad' && 'bg-bad/10 text-bad',
+        tone === 'accent' && 'bg-accent/10 text-accent',
       )}
     >
       {children}
@@ -87,4 +87,47 @@ export function TestBanner({ text }: { text: string }) {
       {text}
     </div>
   );
+}
+
+export function IconButton({ label, active, className, children, ...p }: ButtonHTMLAttributes<HTMLButtonElement> & { label: string; active?: boolean }) {
+  return (
+    <button
+      {...p}
+      aria-label={label}
+      title={label}
+      className={cx(
+        'inline-flex h-8 w-8 items-center justify-center rounded-md border border-line bg-panel/95 text-ink shadow-sm backdrop-blur transition hover:bg-surface disabled:cursor-not-allowed disabled:opacity-40',
+        active && 'border-accent text-accent',
+        className,
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+export function Segmented({ items, value, onChange, label }: { items: { id: string; label: ReactNode; title?: string }[]; value: string | null; onChange: (id: string) => void; label: string }) {
+  return (
+    <div role="group" aria-label={label} className="inline-flex overflow-hidden rounded-md border border-line bg-panel/95 text-xs shadow-sm backdrop-blur">
+      {items.map((it) => (
+        <button
+          key={it.id}
+          title={it.title}
+          aria-pressed={value === it.id}
+          onClick={() => onChange(it.id)}
+          className={cx('flex h-8 min-w-8 items-center justify-center px-2.5 font-medium transition', value === it.id ? 'bg-accent text-accent-ink' : 'hover:bg-surface')}
+        >
+          {it.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export function Skeleton({ className }: { className?: string }) {
+  return <div className={cx('animate-pulse rounded-md bg-line/70', className)} />;
+}
+
+export function Kbd({ children }: { children: ReactNode }) {
+  return <kbd className="rounded border border-line bg-surface px-1.5 py-0.5 font-mono text-[10px] text-muted">{children}</kbd>;
 }

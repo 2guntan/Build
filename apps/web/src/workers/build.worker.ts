@@ -13,9 +13,21 @@ export interface EvalOutput {
   ms: number;
 }
 
-const sunCache = new Map<string, { hours: Float32Array; points: [number, number, number][]; summary: SunStudySummary }>();
+export interface HeatCellOut {
+  pos: [number, number, number];
+  normal: [number, number, number] | null;
+  w: number;
+  h: number;
+}
+
+const sunCache = new Map<string, { hours: Float32Array; cells: HeatCellOut[]; summary: SunStudySummary }>();
 
 const api = {
+  /** Geometry only (agent candidate previews, thumbnails). */
+  build(recipe: Recipe, site: SiteInput): BuildResult {
+    return build(recipe, site, { mesh: false });
+  },
+
   /** Builder + rules + yield in one go, off the main thread. */
   evaluate(recipe: Recipe, site: SiteInput, zone: Zone | null, assumptions: Partial<YieldAssumptions>): EvalOutput {
     const t0 = performance.now();
@@ -34,8 +46,9 @@ const api = {
     const key = `${br.hash}:${date.year}-${date.month}-${date.day}:${context.length}`;
     const hit = sunCache.get(key);
     if (hit) return hit;
-    const r = runSunStudy({ build: br, plot: site.plot, context, date, lat, lon, maxPoints: 2500 });
-    const res = { hours: r.hours, points: r.points.map((p) => p.pos), summary: r.summary };
+    const r = runSunStudy({ build: br, plot: site.plot, context, date, lat, lon, maxPoints: 6000, groundSpacingM: 1.5 });
+    const cells: HeatCellOut[] = r.points.map((p) => ({ pos: p.pos, normal: p.normal ?? null, w: p.widthM ?? 1, h: p.heightM ?? 1 }));
+    const res = { hours: r.hours, cells, summary: r.summary };
     sunCache.set(key, res);
     if (sunCache.size > 20) sunCache.delete(sunCache.keys().next().value!);
     return res;

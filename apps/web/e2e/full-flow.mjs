@@ -24,7 +24,7 @@ try {
   await page.getByRole('heading', { name: 'Projets' }).waitFor();
 
   step('site wizard');
-  await page.getByRole('link', { name: 'Nouveau projet' }).click();
+  await page.getByRole('link', { name: 'Nouveau projet' }).first().click();
   await page.getByLabel('Nom du projet').fill('Immeuble Plateau');
   await page.getByRole('button', { name: 'Suivant' }).click();
   const map = page.getByTestId('plot-map');
@@ -61,14 +61,27 @@ try {
   await page.getByRole('tab', { name: 'Conformité' }).click();
   await page.screenshot({ path: `${OUT}/compliance.png` });
 
+  step('direct edit: add a block, then undo');
+  await page.getByRole('button', { name: /Ajouter un bloc/ }).first().click();
+  await page.getByText('Bloc B').first().waitFor({ timeout: 10000 });
+  await page.getByText('Enregistré').waitFor({ timeout: 10000 });
+  await page.keyboard.press('Control+z');
+  await page.waitForTimeout(2500);
+
   step('agent proposal');
   await page.getByRole('tab', { name: 'Assistant' }).click();
   await page.getByRole('textbox').fill('Immeuble mixte R+4, commerces en rez-de-chaussée');
   await page.getByRole('button', { name: 'Envoyer' }).click();
   await page.getByRole('button', { name: 'Retenir' }).first().waitFor({ timeout: 45000 });
+  await page.getByRole('button', { name: 'Aperçu 3D' }).first().click();
+  await page.waitForTimeout(1500);
   await page.screenshot({ path: `${OUT}/assistant.png` });
   await page.getByRole('button', { name: 'Retenir' }).first().click();
-  await page.getByRole('button', { name: 'Retenue' }).waitFor();
+  await page.getByRole('button', { name: /Retenue/ }).waitFor();
+
+  step('history');
+  await page.getByRole('button', { name: /Historique/ }).first().click();
+  await page.getByRole('button', { name: /Restaurer/ }).first().waitFor({ timeout: 10000 });
 
   step('sun');
   await page.getByLabel('Soleil').check();
@@ -78,22 +91,39 @@ try {
   await page.screenshot({ path: `${OUT}/sun.png` });
 
   step('export IFC');
-  await page.getByRole('button', { name: 'IFC4 (Archicad, Revit)' }).click();
-  await page.getByRole('link', { name: /Télécharger \(IFC\)/ }).waitFor({ timeout: 30000 });
-  const href = await page.getByRole('link', { name: /Télécharger \(IFC\)/ }).getAttribute('href');
+  // Capture the download URL the toast opens (the file is served as an attachment).
+  await page.evaluate(() => { window.open = (u) => { window.__opened = String(u); return null; }; });
+  await page.getByRole('button', { name: /Exporter/ }).click();
+  await page.getByRole('menuitem', { name: /IFC4/ }).click();
+  await page.getByRole('button', { name: 'Télécharger' }).waitFor({ timeout: 40000 });
+  await page.getByRole('button', { name: 'Télécharger' }).click();
+  const href = await page.evaluate(() => window.__opened);
   const res = await page.request.get(href);
   const text = await res.text();
   if (!text.startsWith('ISO-10303-21')) throw new Error('Export is not an IFC file');
   if (!text.includes('IFCMAPCONVERSION')) throw new Error('IFC lacks georeferencing');
   step(`IFC ok (${text.length} bytes, ${(text.match(/IFCBUILDINGSTOREY\(/g) ?? []).length} storeys)`);
 
+  step('share link');
+  await page.getByRole('button', { name: /Partager/ }).first().click();
+  await page.getByRole('button', { name: /Créer et copier le lien/ }).click();
+  const shareUrl = await page.locator('input[readonly]').first().inputValue();
+  await page.keyboard.press('Escape');
+
   step('compare');
-  await page.getByRole('button', { name: 'Dupliquer' }).click();
+  await page.getByRole('button', { name: 'Dupliquer', exact: true }).click();
   await page.waitForTimeout(1500);
-  await page.getByRole('link', { name: 'Comparer' }).click();
+  await page.getByRole('link', { name: /Comparer/ }).click();
   await page.getByRole('heading', { name: 'Comparer les options' }).waitFor();
   await page.waitForTimeout(1000);
   await page.screenshot({ path: `${OUT}/compare.png` });
+
+  step('public presentation');
+  const anon = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  await anon.goto(shareUrl);
+  await anon.getByText('Présentation en lecture seule').waitFor({ timeout: 20000 });
+  await anon.getByTestId('viewport').locator('canvas').first().waitFor({ timeout: 30000 });
+  await anon.close();
 
   if (errors.length) throw new Error(`Page errors: ${errors.join(' | ')}`);
   console.log('E2E PASSED');

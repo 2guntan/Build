@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Upload } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import * as Comlink from 'comlink';
@@ -42,6 +43,7 @@ export default function NewProjectPage() {
   const [closed, setClosed] = useState(false);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [hl, setHl] = useState<number | null>(null);
+  const [basemap, setBasemap] = useState<'streets' | 'satellite'>('satellite');
   const [zoneId, setZoneId] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -123,9 +125,10 @@ export default function NewProjectPage() {
                 <Button disabled={closed || !vertices.length} onClick={() => setVertices(vertices.slice(0, -1))}>{t('wizard.undoVertex')}</Button>
                 <Button onClick={() => { setVertices([]); setClosed(false); }}>{t('wizard.clear')}</Button>
               </div>
-              <Field label={t('wizard.import')}>
-                <input type="file" accept=".geojson,.json,.kml" onChange={(e) => e.target.files?.[0] && void importFile(e.target.files[0])} className="text-sm" />
-              </Field>
+              <label className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-line px-3 py-3 text-sm text-muted hover:border-accent hover:text-accent">
+                <Upload size={15} /> {t('wizard.import')}
+                <input type="file" accept=".geojson,.json,.kml" onChange={(e) => e.target.files?.[0] && void importFile(e.target.files[0])} className="sr-only" />
+              </label>
             </div>
           )}
           {step === 3 && (
@@ -176,7 +179,30 @@ export default function NewProjectPage() {
           </div>
         </aside>
         <section className="relative min-h-[50vh] flex-1">
-          <PlotMap center={DAKAR} vertices={vertices} closed={closed} highlightEdge={hl} flyTo={flyTo} onClick={step === 2 && !closed ? (p) => setVertices([...vertices, p]) : undefined} />
+          <PlotMap
+            center={DAKAR}
+            vertices={vertices}
+            closed={closed}
+            basemap={basemap}
+            highlightEdge={hl}
+            flyTo={flyTo}
+            onClick={step === 2 && !closed ? (p) => setVertices([...vertices, p]) : undefined}
+            onVertexMove={step === 2 ? (i, p) => setVertices((v) => v.map((x, j) => (j === i ? p : x))) : undefined}
+            onInsert={
+              step === 2
+                ? (i, p) => {
+                    setVertices((v) => [...v.slice(0, i + 1), p, ...v.slice(i + 1)]);
+                    setEdges((e) => [...e.slice(0, i + 1), 'side', ...e.slice(i + 1)]);
+                  }
+                : undefined
+            }
+          />
+          <div className="absolute left-3 top-3 inline-flex overflow-hidden rounded-md border border-line bg-panel text-xs shadow">
+            {(['satellite', 'streets'] as const).map((b) => (
+              <button key={b} aria-pressed={basemap === b} onClick={() => setBasemap(b)} className={`px-2.5 py-1.5 font-medium ${basemap === b ? 'bg-accent text-accent-ink' : ''}`}>{t(`viewport.${b}`)}</button>
+            ))}
+          </div>
+          {step === 2 && closed && <p className="pointer-events-none absolute bottom-10 left-1/2 -translate-x-1/2 rounded-full bg-ink/80 px-3 py-1 text-xs text-white">{t('wizard.editHint')}</p>}
         </section>
       </div>
     </div>

@@ -71,6 +71,13 @@ class Storey(_Model):
     heightM: Annotated[float, Field(gt=0, le=100, allow_inf_nan=False)]
     areaM2: Annotated[float, Field(ge=0, allow_inf_nan=False)]
     use: Annotated[str, Field(min_length=1, max_length=64)]
+    # Storey footprint when it differs from the block footprint (stepped-back upper floors).
+    footprint: list[Point2] | None = None
+
+    @field_validator("footprint")
+    @classmethod
+    def _storey_footprint(cls, v: list[Point2] | None) -> list[Point2] | None:
+        return None if v is None else _normalise_ring(v, "storey footprint")
 
 
 class Block(_Model):

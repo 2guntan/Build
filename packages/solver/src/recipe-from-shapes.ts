@@ -19,6 +19,8 @@ export interface ShapeRecipeArgs {
   groundHeightM: number;
   typicalHeightM: number;
   parking: Recipe['parking'];
+  /** Upper-floor step-backs applied to every block (podium + tower). */
+  stepBacks?: { fromFloor: number; inset: number }[];
 }
 
 export function usesFor(intent: Intent): UseAssignment[] {
@@ -49,6 +51,7 @@ export function recipeFromShapes(a: ShapeRecipeArgs): Recipe {
       floorHeights: { ground: '$params.groundFloorHeight', typical: '$params.typicalFloorHeight' },
       uses: usesFor(a.intent),
       roof: { kind: 'flat', accessible: false },
+      ...(a.stepBacks && a.floors > (a.stepBacks[0]?.fromFloor ?? 99) ? { stepBacks: a.stepBacks } : {}),
     };
   });
   const programme: Recipe['programme'] = { targetUse: a.intent.targetUse as Recipe['programme']['targetUse'] };

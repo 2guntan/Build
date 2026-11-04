@@ -9,7 +9,7 @@ interface SunState {
   position: SunPosition | null;
   lat: number;
   lon: number;
-  map: { points: [number, number, number][]; hours: Float32Array; summary: SunStudySummary } | null;
+  map: { cells: import('../workers/build.worker').HeatCellOut[]; hours: Float32Array; summary: SunStudySummary } | null;
   setEnabled(v: boolean): void;
   setLocation(lat: number, lon: number): void;
   setDate(d: DayDate): void;

@@ -134,13 +134,29 @@ function evalRule(rule: Rule, br: BuildResult, ctx: EvalContext): RuleResult {
       let worst: { margin: number; actual: number; limit: number } | null = null;
       const failing: string[] = [];
       for (const b of br.blocks) {
-        const limit = evaluateFormula(rule.min, { H: b.heightM, n: b.floors, A });
-        for (let i = 0; i < plot.length; i++) {
-          if (ctx.edgeClasses[i] !== rule.edge) continue;
-          const d = ringSegmentDistance(b.footprint, plot[i]!, plot[(i + 1) % plot.length]!);
-          const margin = d - limit;
-          if (!worst || margin < worst.margin) worst = { margin, actual: d, limit };
-          if (margin < -1e-3 && !failing.includes(b.id)) failing.push(b.id);
+        // Each distinct storey footprint is checked against the height at its top, so
+        // stepped-back upper floors are judged on their own setback (H = top of that storey).
+        const tiers: { ring: Vec2[]; H: number; n: number }[] = [];
+        for (const s of b.storeys) {
+          const ring = s.footprint ?? b.footprint;
+          const last = tiers[tiers.length - 1];
+          if (last && last.ring === ring) {
+            last.H = s.elevationM + s.heightM;
+            last.n = s.index + 1;
+          } else tiers.push({ ring, H: s.elevationM + s.heightM, n: s.index + 1 });
+        }
+        if (!tiers.length) tiers.push({ ring: b.footprint, H: b.heightM, n: b.floors });
+        // A lower tier must also respect the rule for the full height above it only if no step-back exists;
+        // with step-backs, each tier is evaluated at its own top height.
+        for (const tier of tiers) {
+          const limit = evaluateFormula(rule.min, { H: tier.H, n: tier.n, A });
+          for (let i = 0; i < plot.length; i++) {
+            if (ctx.edgeClasses[i] !== rule.edge) continue;
+            const d = ringSegmentDistance(tier.ring, plot[i]!, plot[(i + 1) % plot.length]!);
+            const margin = d - limit;
+            if (!worst || margin < worst.margin) worst = { margin, actual: d, limit };
+            if (margin < -1e-3 && !failing.includes(b.id)) failing.push(b.id);
+          }
         }
       }
       const ok = failing.length === 0;

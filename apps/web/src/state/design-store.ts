@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { setParams, type BuildResult, type Recipe, type SiteInput } from '@fs/recipe';
+import { addBlock, deleteBlock, duplicateBlock, moveBlock, resizeBlock, rotateBlock, setBlockFloors } from '@fs/builder';
+import type { EditEvent } from '../viewport/EditControls';
 import type { Evaluation, Zone } from '@fs/rules';
 import type { ContextPrism } from '@fs/sun';
 import type { YieldAssumptions, YieldResult } from '@fs/yield';
@@ -15,6 +17,8 @@ export interface DesignState {
   zone: Zone | null;
   assumptions: Partial<YieldAssumptions>;
   context: ContextPrism[];
+  /** Data sources of the context buildings (for attribution). */
+  contextSources: string[];
   origin: { lat: number; lon: number } | null;
   recipe: Recipe | null;
   build: BuildResult | null;
@@ -27,6 +31,15 @@ export interface DesignState {
   undo: Recipe[];
   redo: Recipe[];
   saveState: SaveState;
+  /** Candidate shown as a translucent preview (agent proposals). */
+  ghost: BuildResult | null;
+  ghostId: string | null;
+  setGhost(id: string | null, recipe: Recipe | null): void;
+  applyEdit(e: EditEvent): void;
+  addBlock(): void;
+  duplicateSelected(): void;
+  deleteSelected(): void;
+  editRecipe(f: (r: Recipe) => Recipe): void;
   load(a: {
     optionId: string;
     headId: string | null;
@@ -36,7 +49,7 @@ export interface DesignState {
     assumptions: Partial<YieldAssumptions>;
     origin: { lat: number; lon: number };
   }): void;
-  setContext(c: ContextPrism[]): void;
+  setContext(c: ContextPrism[], sources?: string[]): void;
   setAssumptions(a: Partial<YieldAssumptions>): void;
   setParam(key: string, value: number): void;
   setRecipe(r: Recipe, opts?: { save?: boolean; pushUndo?: boolean }): void;
@@ -67,6 +80,7 @@ export const useDesignStore = create<DesignState>((set, get) => {
     zone: null,
     assumptions: {},
     context: [],
+    contextSources: [],
     origin: null,
     recipe: null,
     build: null,
@@ -78,13 +92,69 @@ export const useDesignStore = create<DesignState>((set, get) => {
     undo: [],
     redo: [],
     saveState: 'idle',
+    ghost: null,
+    ghostId: null,
+
+    async setGhost(id, recipe) {
+      const site = get().site;
+      if (!id || !recipe || !site) return set({ ghost: null, ghostId: null });
+      set({ ghostId: id });
+      const br = await buildWorker().build(recipe, site);
+      if (get().ghostId === id) set({ ghost: br });
+    },
+    editRecipe(f) {
+      const r = get().recipe;
+      if (!r) return;
+      try {
+        const next = f(r);
+        get().setRecipe({ ...next, meta: { ...next.meta, createdBy: 'user' } }, { save: true, pushUndo: true });
+      } catch (err) {
+        console.warn('edit rejected', err);
+      }
+    },
+    applyEdit(e) {
+      const site = get().site;
+      if (!site) return;
+      get().editRecipe((r) => {
+        switch (e.type) {
+          case 'move':
+            return moveBlock(r, site, e.blockId, e.dx, e.dy);
+          case 'rotate':
+            return rotateBlock(r, site, e.blockId, e.deg, e.about);
+          case 'resize':
+            return resizeBlock(r, site, e.blockId, e.axis, e.fixed, e.from, e.to);
+          case 'floors':
+            return setBlockFloors(r, e.blockId, e.floors);
+        }
+      });
+    },
+    addBlock() {
+      const { recipe, site } = get();
+      if (!recipe || !site) return;
+      const res = addBlock(recipe, site);
+      get().setRecipe(res.recipe, { save: true, pushUndo: true });
+      set({ selection: res.id });
+    },
+    duplicateSelected() {
+      const { recipe, site, selection } = get();
+      if (!recipe || !site || !selection) return;
+      const res = duplicateBlock(recipe, site, selection);
+      get().setRecipe(res.recipe, { save: true, pushUndo: true });
+      set({ selection: res.id });
+    },
+    deleteSelected() {
+      const { recipe, selection } = get();
+      if (!recipe || !selection || recipe.blocks.length <= 1) return;
+      get().setRecipe(deleteBlock(recipe, selection), { save: true, pushUndo: true });
+      set({ selection: null });
+    },
 
     load(a) {
       set({ ...a, build: null, compliance: null, yield: null, undo: [], redo: [], selection: null, highlight: [], saveState: 'idle' });
       void reevaluate();
     },
-    setContext(c) {
-      set({ context: c });
+    setContext(c, sources = []) {
+      set({ context: c, contextSources: sources });
     },
     setAssumptions(a) {
       set({ assumptions: a });

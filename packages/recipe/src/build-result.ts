@@ -21,6 +21,8 @@ export interface StoreyResult {
   use: Use | 'unassigned';
   efficiency: number;
   unitMix?: Partial<Record<UnitType, number>>;
+  /** Storey footprint when it differs from the block footprint (step-backs). */
+  footprint?: Vec2[];
 }
 
 export interface BlockMesh {

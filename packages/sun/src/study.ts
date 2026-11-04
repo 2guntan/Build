@@ -14,6 +14,9 @@ export interface SamplePoint {
   blockId?: string;
   /** Area represented by the point, m². */
   areaM2: number;
+  /** Size of the cell the point stands for (for heat-map rendering). */
+  widthM?: number;
+  heightM?: number;
 }
 
 export interface ContextPrism {
@@ -73,33 +76,33 @@ export function samplePoints(br: BuildResult, plot: Vec2[], groundSpacing = 2, f
       const p: Vec2 = [x, y];
       if (!pointInRing(p, ring)) continue;
       if (br.blocks.some((bl) => pointInRing(p, bl.footprint))) continue;
-      pts.push({ kind: 'ground', pos: [x, y, 0.05], areaM2: groundSpacing * groundSpacing });
+      pts.push({ kind: 'ground', pos: [x, y, 0.05], areaM2: groundSpacing * groundSpacing, widthM: groundSpacing, heightM: groundSpacing });
     }
   }
   for (const bl of br.blocks) {
-    const r = normalizeRing(bl.footprint);
-    for (let i = 0; i < r.length; i++) {
-      const a = r[i]!;
-      const c = r[(i + 1) % r.length]!;
-      const len = Math.hypot(c[0] - a[0], c[1] - a[1]);
-      if (len < 1e-6) continue;
-      // CCW ring: outward normal is to the right of the edge direction.
-      const nx = (c[1] - a[1]) / len;
-      const ny = -(c[0] - a[0]) / len;
-      const steps = Math.max(1, Math.round(len / facadeSpacing));
-      const segLen = len / steps;
-      for (let k = 0; k < steps; k++) {
-        const t = (k + 0.5) / steps;
-        const x = a[0] + (c[0] - a[0]) * t + nx * 0.05;
-        const y = a[1] + (c[1] - a[1]) * t + ny * 0.05;
-        for (const s of bl.storeys) {
+    for (const s of bl.storeys) {
+      const r = normalizeRing(s.footprint ?? bl.footprint);
+      for (let i = 0; i < r.length; i++) {
+        const a = r[i]!;
+        const c = r[(i + 1) % r.length]!;
+        const len = Math.hypot(c[0] - a[0], c[1] - a[1]);
+        if (len < 1e-6) continue;
+        // CCW ring: outward normal is to the right of the edge direction.
+        const nx = (c[1] - a[1]) / len;
+        const ny = -(c[0] - a[0]) / len;
+        const steps = Math.max(1, Math.round(len / facadeSpacing));
+        const segLen = len / steps;
+        for (let k = 0; k < steps; k++) {
+          const t = (k + 0.5) / steps;
           pts.push({
             kind: 'facade',
-            pos: [x, y, s.elevationM + s.heightM / 2],
+            pos: [a[0] + (c[0] - a[0]) * t + nx * 0.05, a[1] + (c[1] - a[1]) * t + ny * 0.05, s.elevationM + s.heightM / 2],
             normal: [nx, ny, 0],
             orientation: orientationOf(nx, ny),
             blockId: bl.id,
             areaM2: segLen * s.heightM,
+            widthM: segLen,
+            heightM: s.heightM,
           });
         }
       }
@@ -110,7 +113,7 @@ export function samplePoints(br: BuildResult, plot: Vec2[], groundSpacing = 2, f
 
 export function buildPrisms(br: BuildResult, context: ContextPrism[] = []): Prism[] {
   return [
-    ...br.blocks.filter((b) => b.heightM > 0).map((b) => makePrism(b.id, b.footprint, 0, b.heightM)),
+    ...br.blocks.flatMap((b) => b.storeys.map((s) => makePrism(b.id, s.footprint ?? b.footprint, s.elevationM, s.elevationM + s.heightM))),
     ...context.map((c) => makePrism(c.id, c.ring, 0, c.heightM)),
   ];
 }

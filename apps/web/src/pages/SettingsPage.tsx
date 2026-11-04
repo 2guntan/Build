@@ -7,6 +7,7 @@ import { keys, useAssumptions, useInvalidate, useProject } from '../api/hooks';
 import type { Assumptions } from '../api/types';
 import { AppHeader } from '../components/AppHeader';
 import { Badge, Button, Card, Field, Input } from '../components/ui';
+import { MembersCard } from '../components/MembersCard';
 
 const numOrUndef = (s: string) => (s.trim() === '' ? undefined : Number(s));
 
@@ -94,6 +95,7 @@ export default function SettingsPage() {
           </p>
           <p className="text-xs text-muted">{t('settings.currency')} : {cur}</p>
         </Card>
+        {project.data && <MembersCard orgId={project.data.orgId} />}
       </main>
     </div>
   );

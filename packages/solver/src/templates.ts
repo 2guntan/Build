@@ -1,7 +1,7 @@
 import type { Vec2 } from '@fs/geometry';
 
 /** Layout templates in the site frame (u along the front, v inwards), metres. */
-export const TEMPLATES = ['bar', 'double_bar', 'l_shape', 'u_shape', 'courtyard', 'towers'] as const;
+export const TEMPLATES = ['bar', 'double_bar', 'l_shape', 'u_shape', 'courtyard', 'towers', 'podium_tower'] as const;
 export type Template = (typeof TEMPLATES)[number];
 
 export interface TemplateParams {
@@ -42,6 +42,9 @@ export function templateShapes(t: Template, p: TemplateParams): BlockShape[] | n
   switch (t) {
     case 'bar':
       return d <= D ? [rect(u, v, W, d)] : null;
+    case 'podium_tower':
+      // Deep podium (full buildable depth up to 2.2 × wing depth); upper floors step back (see solver).
+      return d * 1.4 <= D ? [rect(u, v, W, Math.min(D, d * 2.2))] : null;
     case 'double_bar':
       if (2 * d + p.gap > D) return null;
       return [rect(u, v, W, d), rect(u, v + D - d, W, d)];

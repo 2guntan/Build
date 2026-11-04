@@ -66,3 +66,15 @@ describe('property: solved recipes never overlap or leave the plot', () => {
     );
   });
 });
+
+describe('podium + tower template', () => {
+  it('produces stepped, compliant candidates', () => {
+    const ref = REFERENCE_PLOTS[2]!;
+    const zone = findZone(TEST_RULESET, ref.zone);
+    const res = solve({ intent: { targetUse: 'mixed', layout: 'podium_tower' }, plot: ref.plot, edgeClasses: ref.edgeClasses, zone, base });
+    expect(res.candidates.length).toBeGreaterThan(0);
+    const c = res.candidates[0]!;
+    expect(c.recipe.blocks[0]!.stepBacks?.[0]?.fromFloor).toBe(2);
+    expect(c.compliance.compliant).toBe(true);
+  });
+});

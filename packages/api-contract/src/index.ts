@@ -136,6 +136,7 @@ export const AgentEvent = z.discriminatedUnion('type', [
   z.object({ type: z.literal('status'), status: z.string() }),
   z.object({ type: z.literal('step'), seq: z.number(), tool: z.string(), input: z.unknown(), output: z.unknown(), durationMs: z.number(), error: z.string().nullable() }),
   z.object({ type: z.literal('text'), text: z.string() }),
+  z.object({ type: z.literal('delta'), text: z.string() }),
   z.object({ type: z.literal('candidates'), candidates: z.array(z.object({ id: z.string(), template: z.string(), recipe: Recipe, metrics: z.unknown(), compliance: z.unknown(), yield: z.unknown() })) }),
   z.object({ type: z.literal('done'), explanation: z.string(), proposedCandidateId: z.string().nullable(), tokensIn: z.number(), tokensOut: z.number(), costUsd: z.number() }),
   z.object({ type: z.literal('error'), code: z.string(), message: z.string() }),

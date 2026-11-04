@@ -86,6 +86,8 @@ export const Block = z.object({
   floors: NumOrRef,
   floorHeights: z.object({ ground: NumOrRef, typical: NumOrRef }),
   uses: z.array(UseAssignment).min(1),
+  /** Upper floors stepped back: from `fromFloor` up, the footprint is inset by `inset` metres. */
+  stepBacks: z.array(z.object({ fromFloor: z.number().int().min(1), inset: NumOrRef })).max(4).optional(),
   roof: z.object({ kind: z.literal('flat'), accessible: z.boolean().default(false) }).default({
     kind: 'flat',
     accessible: false,

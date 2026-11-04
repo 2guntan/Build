@@ -18,12 +18,14 @@ export interface ModelResponse {
 }
 /** Abstraction over the Claude API so tests and the offline mode can script responses. */
 export interface ModelClient {
-  create(req: ModelRequest): Promise<ModelResponse>;
+  /** `onText` receives text deltas as they stream (optional). */
+  create(req: ModelRequest, onText?: (delta: string) => void): Promise<ModelResponse>;
 }
 
 export type LoopEvent =
   | { type: 'step'; seq: number; tool: string; input: unknown; output: unknown; durationMs: number; error: string | null }
-  | { type: 'text'; text: string };
+  | { type: 'text'; text: string }
+  | { type: 'delta'; text: string };
 
 export interface LoopResult {
   explanation: string;
@@ -73,7 +75,9 @@ export async function runAgentLoop(args: {
   let stopReason: string | null = null;
 
   for (let turn = 0; turn < args.maxToolCalls + 2; turn++) {
-    const res = await client.create({ model: args.model, system: SYSTEM_PROMPT, tools, messages });
+    const res = await client.create({ model: args.model, system: SYSTEM_PROMPT, tools, messages }, (delta) => {
+      void args.onEvent({ type: 'delta', text: delta });
+    });
     tokensIn += res.usage.input_tokens + (res.usage.cache_read_input_tokens ?? 0) + (res.usage.cache_creation_input_tokens ?? 0);
     tokensOut += res.usage.output_tokens;
     stopReason = res.stop_reason;

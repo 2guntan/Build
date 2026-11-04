@@ -36,7 +36,7 @@ export function registerExportRoutes(app: FastifyInstance, deps: Deps) {
     const { key, exp, sig, name } = req.query;
     if (!key || !exp || !sig || !s.verify(key, Number(exp), sig, Math.floor(Date.now() / 1000))) throw new ProblemError('FORBIDDEN');
     const body = await s.get(key);
-    const type = key.endsWith('.pdf') ? 'application/pdf' : key.endsWith('.ifc') ? 'application/x-step' : 'application/json';
+    const type = key.endsWith('.pdf') ? 'application/pdf' : key.endsWith('.ifc') ? 'application/x-step' : key.endsWith('.png') ? 'image/png' : 'application/json';
     reply.header('content-type', type);
     reply.header('access-control-allow-origin', deps.cfg.WEB_ORIGIN);
     if (name) reply.header('content-disposition', `attachment; filename="${name.replace(/[^\w.-]/g, '_')}"`);

@@ -23,7 +23,7 @@ export function CompliancePanel() {
           <div><div className="text-muted">{t('metrics.far')}</div><div className="font-semibold">{num(tot.plotAreaM2 ? tot.gfaM2 / tot.plotAreaM2 : 0, 2)}</div></div>
         </div>
       )}
-      <div aria-live="polite" className={`rounded-md px-2 py-1.5 text-xs font-medium ${ev.compliant ? 'bg-green-50 text-ok' : 'bg-red-50 text-bad'}`}>
+      <div aria-live="polite" className={`rounded-md px-2 py-1.5 text-xs font-medium ${ev.compliant ? 'bg-ok/10 text-ok' : 'bg-bad/10 text-bad'}`}>
         {ev.compliant ? t('compliance.allPass') : t('compliance.failures', { count: ev.blockingFailures })}
       </div>
       <ul className="space-y-1.5">

@@ -17,7 +17,7 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   {
     files: ['**/*.mjs', '**/e2e/**', 'scripts/**', 'benchmarks/**'],
-    languageOptions: { globals: { process: 'readonly', console: 'readonly', URL: 'readonly', fetch: 'readonly' } },
+    languageOptions: { globals: { process: 'readonly', console: 'readonly', URL: 'readonly', fetch: 'readonly', window: 'readonly' } },
   },
   {
     rules: {

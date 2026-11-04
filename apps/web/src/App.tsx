@@ -11,6 +11,7 @@ const NewProjectPage = lazy(() => import('./pages/NewProjectPage'));
 const WorkspacePage = lazy(() => import('./pages/WorkspacePage'));
 const ComparePage = lazy(() => import('./pages/ComparePage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const SharedPage = lazy(() => import('./pages/SharedPage'));
 
 function Loading() {
   const { t } = useTranslation();
@@ -31,6 +32,7 @@ export function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/s/:token" element={<SharedPage />} />
           <Route path="/" element={<Private><ProjectsPage /></Private>} />
           <Route path="/projects/new" element={<Private><NewProjectPage /></Private>} />
           <Route path="/projects/:id" element={<Private><WorkspacePage /></Private>} />

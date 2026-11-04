@@ -1,11 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { api } from '../api/client';
+import { toast } from 'sonner';
+import { Check, ChevronDown, CloudOff, Columns3, Copy, Download, FileBox, FileText, History, Image, Loader2, Plus, Redo2, Settings, Share2, Undo2 } from 'lucide-react';
+import { api, problemMessage } from '../api/client';
 import type { OptionDto } from '../api/types';
 import { Button } from '../components/ui';
 import { flush } from '../state/saver';
 import { useDesignStore } from '../state/design-store';
+import { useViewStore } from '../state/view-store';
 
 interface Props {
   projectId: string;
@@ -14,12 +17,17 @@ interface Props {
   optionId: string;
   onSelect: (id: string) => void;
   onNewOption: (duplicate: boolean) => void;
-  onHeadMoved: () => void;
+  onRenameOption: (id: string, name: string) => void;
+  onUndo: () => void;
+  onRedo: () => void;
+  canRedo: boolean;
   onPreviewIfc: (url: string) => void;
+  onHistory: () => void;
+  onShare: () => void;
 }
 
 async function pollExport(id: string): Promise<{ status: string; url: string | null; error: string | null }> {
-  for (let i = 0; i < 60; i++) {
+  for (let i = 0; i < 90; i++) {
     const s = await api<{ status: string; url: string | null; error: string | null }>(`/exports/${id}`);
     if (s.status === 'done' || s.status === 'failed') return s;
     await new Promise((r) => setTimeout(r, 1000));
@@ -27,72 +35,120 @@ async function pollExport(id: string): Promise<{ status: string; url: string | n
   return { status: 'failed', url: null, error: 'timeout' };
 }
 
-export function TopBar(p: Props) {
+function SaveIndicator() {
   const { t } = useTranslation();
-  const saveState = useDesignStore((s) => s.saveState);
-  const headId = useDesignStore((s) => s.headId);
-  const [redo, setRedo] = useState<string[]>([]);
-  const [exportState, setExportState] = useState<{ kind: string; status: string; url: string | null; error: string | null } | null>(null);
+  const s = useDesignStore((x) => x.saveState);
+  const map = {
+    idle: null,
+    pending: [<Loader2 key="i" size={13} className="animate-spin" />, t('workspace.saving')],
+    saving: [<Loader2 key="i" size={13} className="animate-spin" />, t('workspace.saving')],
+    saved: [<Check key="i" size={13} className="text-ok" />, t('workspace.saved')],
+    offline: [<CloudOff key="i" size={13} className="text-warn" />, t('workspace.offline')],
+    error: [<CloudOff key="i" size={13} className="text-bad" />, t('app.error')],
+  } as const;
+  const v = map[s];
+  return (
+    <span className="flex items-center gap-1 text-xs text-muted" aria-live="polite">
+      {v?.[0]} <span className="hidden lg:inline">{v?.[1]}</span>
+    </span>
+  );
+}
 
-  const undo = async () => {
-    await flush();
-    const opt = await api<{ head: { id: string; parentId: string | null } | null }>(`/options/${p.optionId}`);
-    if (!opt.head?.parentId) return;
-    await api(`/options/${p.optionId}/head`, { method: 'POST', body: { versionId: opt.head.parentId } });
-    setRedo([...redo, opt.head.id]);
-    p.onHeadMoved();
-  };
-  const doRedo = async () => {
-    const next = redo[redo.length - 1];
-    if (!next) return;
-    await api(`/options/${p.optionId}/head`, { method: 'POST', body: { versionId: next } });
-    setRedo(redo.slice(0, -1));
-    p.onHeadMoved();
-  };
+export function TopBar(p: Props) {
+  const { t, i18n } = useTranslation();
+  const headId = useDesignStore((s) => s.headId);
+  const [menu, setMenu] = useState(false);
+  const [editing, setEditing] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const close = (e: MouseEvent) => menuRef.current && !menuRef.current.contains(e.target as Node) && setMenu(false);
+    window.addEventListener('mousedown', close);
+    return () => window.removeEventListener('mousedown', close);
+  }, []);
+
   const exportAs = async (kind: 'ifc' | 'pdf') => {
+    setMenu(false);
     await flush();
     const head = useDesignStore.getState().headId;
     if (!head) return;
-    setExportState({ kind, status: 'running', url: null, error: null });
-    const { exportId } = await api<{ exportId: string }>(`/versions/${head}/exports`, { method: 'POST', body: { kind } });
-    setExportState({ kind, ...(await pollExport(exportId)) });
+    const id = toast.loading(t('workspace.exporting'));
+    try {
+      const { exportId } = await api<{ exportId: string }>(`/versions/${head}/exports`, { method: 'POST', body: { kind } });
+      const r = await pollExport(exportId);
+      if (r.status !== 'done' || !r.url) throw new Error(r.error ?? 'export failed');
+      toast.success(kind === 'ifc' ? t('export.ifcReady') : t('export.pdfReady'), {
+        id,
+        duration: 15000,
+        action: { label: t('workspace.download'), onClick: () => window.open(r.url!, '_blank') },
+        ...(kind === 'ifc' ? { cancel: { label: t('workspace.preview'), onClick: () => p.onPreviewIfc(r.url!) } } : {}),
+      });
+    } catch (e) {
+      toast.error(problemMessage(e, i18n.language), { id });
+    }
   };
 
   return (
     <div className="flex flex-wrap items-center gap-2 border-b border-line bg-panel px-3 py-1.5">
-      <span className="mr-2 truncate font-semibold">{p.projectName}</span>
-      <div role="tablist" aria-label={t('workspace.options')} className="flex gap-1">
-        {p.options.map((o) => (
-          <button key={o.id} role="tab" aria-selected={o.id === p.optionId} onClick={() => p.onSelect(o.id)} className={`rounded px-2 py-1 text-xs ${o.id === p.optionId ? 'bg-accent text-white' : 'hover:bg-surface'}`}>
-            {o.name}
-          </button>
-        ))}
-        <Button variant="ghost" className="text-xs" onClick={() => p.onNewOption(false)} title={t('workspace.newOption')}>＋</Button>
-        <Button variant="ghost" className="text-xs" onClick={() => p.onNewOption(true)}>{t('workspace.duplicate')}</Button>
+      <span className="mr-1 max-w-[16rem] truncate font-semibold" title={p.projectName}>{p.projectName}</span>
+      <div role="tablist" aria-label={t('workspace.options')} className="flex items-center gap-0.5 rounded-lg bg-surface p-0.5">
+        {p.options.map((o) =>
+          editing === o.id ? (
+            <input
+              key={o.id}
+              autoFocus
+              defaultValue={o.name}
+              className="w-28 rounded px-2 py-1 text-xs"
+              onBlur={(e) => {
+                setEditing(null);
+                if (e.target.value.trim() && e.target.value !== o.name) p.onRenameOption(o.id, e.target.value.trim());
+              }}
+              onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+            />
+          ) : (
+            <button
+              key={o.id}
+              role="tab"
+              aria-selected={o.id === p.optionId}
+              title={t('workspace.renameHint')}
+              onClick={() => p.onSelect(o.id)}
+              onDoubleClick={() => setEditing(o.id)}
+              className={`rounded-md px-2.5 py-1 text-xs font-medium transition ${o.id === p.optionId ? 'bg-panel shadow-sm' : 'text-muted hover:text-ink'}`}
+            >
+              {o.name}
+            </button>
+          ),
+        )}
+        <button className="rounded-md p-1 text-muted hover:bg-panel hover:text-ink" onClick={() => p.onNewOption(false)} title={t('workspace.newOption')} aria-label={t('workspace.newOption')}><Plus size={14} /></button>
+        <button className="rounded-md p-1 text-muted hover:bg-panel hover:text-ink" onClick={() => p.onNewOption(true)} title={t('workspace.duplicate')} aria-label={t('workspace.duplicate')}><Copy size={14} /></button>
       </div>
       <div className="ml-auto flex items-center gap-1">
-        <span className="mr-2 text-xs text-muted" aria-live="polite">
-          {saveState === 'saving' || saveState === 'pending' ? t('workspace.saving') : saveState === 'offline' ? t('workspace.offline') : saveState === 'saved' ? t('workspace.saved') : ''}
-        </span>
-        <Button variant="ghost" onClick={undo} disabled={!headId} aria-label={t('workspace.undo')}>↶</Button>
-        <Button variant="ghost" onClick={doRedo} disabled={!redo.length} aria-label={t('workspace.redo')}>↷</Button>
-        <Button onClick={() => void exportAs('ifc')}>{t('workspace.exportIfc')}</Button>
-        <Button onClick={() => void exportAs('pdf')}>{t('workspace.exportPdf')}</Button>
-        <Link className="rounded px-2 py-1 text-sm hover:bg-surface" to={`/projects/${p.projectId}/compare`}>{t('workspace.compare')}</Link>
-        <Link className="rounded px-2 py-1 text-sm hover:bg-surface" to={`/projects/${p.projectId}/settings`}>{t('workspace.settings')}</Link>
-      </div>
-      {exportState && (
-        <div className="flex w-full items-center justify-end gap-2 text-xs">
-          {exportState.status === 'running' && <span>{t('workspace.exporting')}</span>}
-          {exportState.status === 'done' && exportState.url && (
-            <>
-              <a className="text-accent underline" href={exportState.url}>{t('workspace.download')} ({exportState.kind.toUpperCase()})</a>
-              {exportState.kind === 'ifc' && <button className="underline" onClick={() => p.onPreviewIfc(exportState.url!)}>{t('workspace.preview')}</button>}
-            </>
+        <SaveIndicator />
+        <span className="mx-1 h-5 w-px bg-line" />
+        <Button variant="ghost" onClick={p.onUndo} disabled={!headId} aria-label={t('workspace.undo')} title={`${t('workspace.undo')} (Ctrl+Z)`}><Undo2 size={16} /></Button>
+        <Button variant="ghost" onClick={p.onRedo} disabled={!p.canRedo} aria-label={t('workspace.redo')} title={`${t('workspace.redo')} (Ctrl+Shift+Z)`}><Redo2 size={16} /></Button>
+        <Button variant="ghost" onClick={p.onHistory} title={t('history.title')}><History size={16} /><span className="hidden xl:inline">{t('history.title')}</span></Button>
+        <Button variant="ghost" onClick={p.onShare} title={t('share.title')}><Share2 size={16} /><span className="hidden xl:inline">{t('share.title')}</span></Button>
+        <div className="relative" ref={menuRef}>
+          <Button variant="primary" onClick={() => setMenu(!menu)} aria-haspopup="menu" aria-expanded={menu}>
+            <Download size={15} /> {t('workspace.export')} <ChevronDown size={14} />
+          </Button>
+          {menu && (
+            <div role="menu" className="absolute right-0 z-30 mt-1 w-64 overflow-hidden rounded-lg border border-line bg-panel py-1 shadow-xl">
+              <button role="menuitem" className="flex w-full items-start gap-2 px-3 py-2 text-left text-sm hover:bg-surface" onClick={() => void exportAs('ifc')}>
+                <FileBox size={16} className="mt-0.5 text-accent" /><span><span className="block font-medium">IFC4</span><span className="text-xs text-muted">{t('export.ifcHint')}</span></span>
+              </button>
+              <button role="menuitem" className="flex w-full items-start gap-2 px-3 py-2 text-left text-sm hover:bg-surface" onClick={() => void exportAs('pdf')}>
+                <FileText size={16} className="mt-0.5 text-accent" /><span><span className="block font-medium">PDF</span><span className="text-xs text-muted">{t('export.pdfHint')}</span></span>
+              </button>
+              <button role="menuitem" className="flex w-full items-start gap-2 px-3 py-2 text-left text-sm hover:bg-surface" onClick={() => { setMenu(false); useViewStore.getState().screenshot(); }}>
+                <Image size={16} className="mt-0.5 text-accent" /><span><span className="block font-medium">PNG</span><span className="text-xs text-muted">{t('export.pngHint')}</span></span>
+              </button>
+            </div>
           )}
-          {exportState.status === 'failed' && <span className="text-bad">{exportState.error}</span>}
         </div>
-      )}
+        <Link className="flex items-center gap-1 rounded-md px-2 py-1.5 text-sm hover:bg-surface" to={`/projects/${p.projectId}/compare`} title={t('workspace.compare')}><Columns3 size={16} /><span className="hidden xl:inline">{t('workspace.compare')}</span></Link>
+        <Link className="rounded-md p-1.5 hover:bg-surface" to={`/projects/${p.projectId}/settings`} title={t('workspace.settings')} aria-label={t('workspace.settings')}><Settings size={16} /></Link>
+      </div>
     </div>
   );
 }

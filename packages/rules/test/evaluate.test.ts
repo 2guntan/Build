@@ -107,3 +107,17 @@ describe('jurisdiction files', () => {
     expect(TEST_RULESET.disclaimer).toMatch(/NON OFFICIEL/);
   });
 });
+
+describe('setback with step-backs', () => {
+  it('checks each tier at its own height', () => {
+    const r: Rule = { id: 's', type: 'setback', edge: 'front', min: 'H/4', severity: 'blocking', cite };
+    const podium = rect(5, 5, 20, 10);
+    const tower = rect(5, 10, 20, 5); // 10 m from the front edge
+    const b = block('a', podium, 10, 30);
+    b.storeys = b.storeys.map((s, i) => ({ ...s, elevationM: i * 3, ...(i >= 2 ? { footprint: tower } : {}) }));
+    // podium top 6 m → needs 1.5 m (has 5); tower top 30 m → needs 7.5 m (has 10)
+    expect(run(r, br([b])).status).toBe('pass');
+    const flat = block('a', podium, 10, 30); // same height without step-back: needs 7.5, has 5
+    expect(run(r, br([flat])).status).toBe('fail');
+  });
+});

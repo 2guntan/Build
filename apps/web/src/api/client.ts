@@ -39,7 +39,7 @@ export function streamAgentRun(runId: string, onEvent: (e: AgentEvent) => void):
     onEvent(e);
     if (e.type === 'done' || e.type === 'error') es.close();
   };
-  for (const t of ['status', 'step', 'text', 'candidates', 'done', 'error']) es.addEventListener(t, handler as EventListener);
+  for (const t of ['status', 'step', 'text', 'delta', 'candidates', 'done', 'error']) es.addEventListener(t, handler as EventListener);
   es.onerror = () => es.close();
   return () => es.close();
 }

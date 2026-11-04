@@ -236,7 +236,22 @@ export const designOption = pgTable('design_option', {
   headVersionId: text('head_version_id'),
   isArchived: boolean('is_archived').notNull().default(false),
   nonCompliantStudy: boolean('non_compliant_study').notNull().default(false),
+  /** PNG snapshot of the head design (for cards, compare and PDF). */
+  thumbnailKey: text('thumbnail_key'),
   createdAt: createdAt(),
+});
+
+/** Read-only public links to a project (presentation mode). */
+export const shareLink = pgTable('share_link', {
+  id: id('shr'),
+  projectId: text('project_id')
+    .notNull()
+    .references(() => project.id, { onDelete: 'cascade' }),
+  token: text('token').notNull().unique(),
+  createdBy: text('created_by').references(() => user.id),
+  createdAt: createdAt(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }),
+  revokedAt: timestamp('revoked_at', { withTimezone: true }),
 });
 
 export const recipeVersion = pgTable(

@@ -86,3 +86,16 @@ describe('builder', () => {
     expect(() => parseRecipe(baseRecipe())).not.toThrow();
   });
 });
+
+describe('step-backs (podium + tower)', () => {
+  it('insets upper floors and reduces their area', () => {
+    const r = baseRecipe();
+    r.blocks[0]!.stepBacks = [{ fromFloor: 2, inset: 2 }];
+    const b = build(r, site(40, 30, 5)).blocks[0]!;
+    expect(b.storeys[0]!.areaM2).toBe(384);
+    expect(b.storeys[1]!.footprint).toBeUndefined();
+    expect(b.storeys[2]!.areaM2).toBeCloseTo(20 * 12, 1);
+    expect(b.storeys[2]!.footprint).toBeDefined();
+    expect(b.gfaM2).toBeCloseTo(384 * 2 + 240 * 4, 0);
+  });
+});

@@ -104,3 +104,34 @@ Newest last. Each entry: decision — reason.
     optimised for phones in v1.
 41. **Agent benchmark** runs the agent loop directly on the reference plots (no database), so it measures
     Claude + tools + solver. The scripted model gives a harness baseline (100 % compliance, 70 % full).
+
+## Professional UX pass (3D scene, direct editing, polish, visual results)
+
+42. **Renderer**: That Open `SimpleRenderer` subclass (`StudioRenderer`) with a post-processing chain
+    (GTAO ambient occlusion, SMAA, ACES tone mapping) and a CSS2D overlay for dimension labels. Quality is
+    `auto` (drops AO/shadows below 30 fps for two windows), `high` or `low` — user setting in the Layers panel.
+43. **Basemap in 3D**: XYZ tiles at zoom 18 placed in the local frame around the site (satellite, streets or
+    none). Templates via `VITE_SATELLITE_TILES` / `VITE_STREET_TILES`; defaults (Esri imagery, OSM) are for
+    development only. When tiles cannot load, a neutral ground with a grid keeps the scene readable and the
+    footer says the basemap is unavailable.
+44. **Façades** use a procedural window texture (one bay per 3 m, one window per storey); "By use" mode
+    shows flat use colours. Neighbours are clay-white volumes with soft edges.
+45. **Direct editing**: select → orange side handles stretch the footprint along its main axes (0.5 m snap),
+    the blue arrow changes the floor count; Move (G) and Rotate (R) use a gizmo (0.5 m / 5° snap). Every
+    gesture ends as a pure recipe edit (`packages/builder/src/edit.ts`, tested). Moving a rect keeps it a
+    rect (offsets); rotating or stretching converts it to an explicit polygon and drops its width/depth params.
+46. **Step-backs** (`blocks[].stepBacks`, optional, schema v1 compatible): upper floors from `fromFloor`
+    are inset by `inset` m. The setback rule is evaluated per tier at the tier's own top height. New solver
+    template `podium_tower` uses one step-back at R+2. The IFC service accepts per-storey footprints.
+47. **Demo project** (`POST /projects/demo`): a plot on the Plateau with a synthetic neighbourhood clearly
+    labelled `demo-synthetic` (viewport footer says so) and three options (starter + two solver layouts).
+    No prices are entered: yield stays "to be entered".
+48. **Thumbnails**: the workspace renders an offscreen 3D snapshot after saves and stores it
+    (`PUT /options/:id/thumbnail`, PNG ≤ 400 KB). Used on project cards, in compare (live fallback) and in the PDF.
+49. **Share links** (`share_link` table): random 24-char tokens, 7/30/90-day expiry, revocable; the public
+    `/s/:token` page is read-only and exposes no user data.
+50. **Members**: owners add existing accounts by email (no e-mail invitations in v1), change roles, remove.
+51. **Assistant** streams text deltas (Claude streaming API) to the chat; candidates show a 3D thumbnail and
+    a translucent preview in the scene before acceptance.
+52. **Initial JS** grew to ~320 KB gzipped (budget 600 KB): rolldown hoists its CommonJS interop helpers into
+    the Three.js chunk, so the entry imports it. Not worth a custom bundler setup for now.

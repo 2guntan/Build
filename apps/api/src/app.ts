@@ -16,6 +16,7 @@ import { registerProjectRoutes } from './routes/projects.js';
 import { registerOptionRoutes } from './routes/options.js';
 import { registerAgentRoutes } from './routes/agent.js';
 import { registerExportRoutes } from './routes/exports.js';
+import { registerSharingRoutes } from './routes/sharing.js';
 
 export interface Deps {
   cfg: Config;
@@ -64,5 +65,6 @@ export async function buildApp(a: {
   registerOptionRoutes(app, deps);
   registerAgentRoutes(app, deps);
   registerExportRoutes(app, deps);
+  registerSharingRoutes(app, deps);
   return { app, deps };
 }

@@ -1,5 +1,4 @@
 import { eq } from 'drizzle-orm';
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { build } from '@fs/builder';
 import { LocalFrame } from '@fs/geometry';
 import type { Recipe } from '@fs/recipe';
@@ -8,6 +7,7 @@ import type { Db } from '../db/client.js';
 import { designOption, evaluation, exportJob, project, recipeVersion } from '../db/schema.js';
 import { projectContext } from './evaluation.js';
 import type { Storage } from './storage.js';
+import { buildPdf, type PdfInput } from './pdf.js';
 
 export const ATTRIBUTION =
   'Bâtiments : Google Open Buildings (CC BY 4.0 / ODbL), Overture Maps, © contributeurs OpenStreetMap (ODbL). Terrain : Copernicus DEM GLO-30 (© DLR/Airbus, licence Copernicus).';
@@ -39,57 +39,22 @@ export async function buildIfcPayload(db: Db, cfg: Config, versionId: string) {
   };
 }
 
-/** WinAnsi-safe text for the standard PDF fonts. */
-function safe(s: string) {
-  return s.replace(/≤/g, '<=').replace(/≥/g, '>=').replace(/[\u2013\u2014]/g, '-').replace(/[^\x20-\x7E\u00A0-\u00FF]/g, '');
-}
-
-export async function renderPdf(db: Db, cfg: Config, versionId: string): Promise<Uint8Array> {
-  const { version, option, project: p, evaluation: ev } = await load(db, cfg, versionId);
-  const doc = await PDFDocument.create();
-  const page = doc.addPage([595, 842]);
-  const font = await doc.embedFont(StandardFonts.Helvetica);
-  const bold = await doc.embedFont(StandardFonts.HelveticaBold);
-  let y = 800;
-  const line = (t: string, size = 10, f = font, color = rgb(0.1, 0.1, 0.1)) => {
-    page.drawText(safe(t), { x: 48, y, size, font: f, color });
-    y -= size + 6;
-  };
-  const metrics = (ev?.metrics ?? {}) as Record<string, number>;
-  const compliance = (ev?.compliance ?? { results: [], test: false }) as {
-    results: { ruleId: string; status: string; message_fr: string; cite: { source: string; article: string } }[];
-    test: boolean;
-    compliant: boolean;
-  };
-  const y_ = (ev?.yield ?? {}) as { complete?: boolean; revenue?: number; totalCost?: number; margin?: number; marginOnCost?: number | null; currency?: string; missing?: string[] };
-  const fmt = (n: number | undefined, d = 0) => (n === undefined || n === null ? '-' : new Intl.NumberFormat('fr-FR', { maximumFractionDigits: d }).format(n));
-  line('Feasibility Studio - Synthèse de faisabilité', 16, bold);
-  line(`${p.name} · ${option.name} · version ${version.id}`, 10);
-  line(`Généré le ${new Date().toISOString().slice(0, 10)}`, 8, font, rgb(0.4, 0.4, 0.4));
-  if (compliance.test) line('ATTENTION : règles de TEST, non officielles. Ne pas utiliser pour une décision.', 10, bold, rgb(0.75, 0.1, 0.1));
-  y -= 6;
-  line('Programme', 12, bold);
-  line(`Surface de plancher (SDP) : ${fmt(metrics.gfaM2)} m²   Emprise : ${fmt(metrics.footprintAreaM2)} m²   Parcelle : ${fmt(metrics.plotAreaM2)} m²`);
-  line(`Hauteur max : ${fmt(metrics.maxHeightM, 1)} m   Niveaux max : R+${Math.max(0, (metrics.maxFloors ?? 1) - 1)}   Stationnement : ${fmt(metrics.parkingSpaces)} places`);
-  if (metrics.plotAreaM2) line(`Emprise au sol : ${fmt((100 * metrics.footprintAreaM2!) / metrics.plotAreaM2, 1)} %   COS : ${fmt(metrics.gfaM2! / metrics.plotAreaM2, 2)}`);
-  y -= 6;
-  line(`Conformité : ${compliance.compliant ? 'conforme' : 'NON conforme'}`, 12, bold);
-  for (const r of compliance.results.slice(0, 18)) {
-    const mark = r.status === 'pass' ? 'OK ' : r.status === 'warn' ? '!  ' : 'X  ';
-    line(`${mark} ${r.message_fr}  [${r.cite.source} ${r.cite.article}]`, 9);
-  }
-  y -= 6;
-  line('Bilan', 12, bold);
-  if (y_.complete) {
-    line(`Chiffre d'affaires : ${fmt(y_.revenue)} ${y_.currency}   Coût total : ${fmt(y_.totalCost)} ${y_.currency}`);
-    line(`Marge : ${fmt(y_.margin)} ${y_.currency}   Marge sur coût : ${y_.marginOnCost != null ? fmt(100 * y_.marginOnCost, 1) + ' %' : '-'}`);
-  } else {
-    line(`Hypothèses incomplètes : ${(y_.missing ?? []).join(', ') || 'saisissez vos prix'}`, 9);
-  }
-  y = 60;
-  line(ATTRIBUTION, 7, font, rgb(0.4, 0.4, 0.4));
-  line('Étude de capacité indicative. Ne remplace ni un relevé, ni un avis réglementaire.', 7, font, rgb(0.4, 0.4, 0.4));
-  return doc.save();
+export async function renderPdf(db: Db, cfg: Config, versionId: string, storage?: Storage): Promise<Uint8Array> {
+  const { version, option, project: p, evaluation: ev, ctx } = await load(db, cfg, versionId);
+  let thumbnail: Uint8Array | null = null;
+  if (storage && option.thumbnailKey) thumbnail = await storage.get(option.thumbnailKey).catch(() => null);
+  return buildPdf({
+    projectName: p.name,
+    optionName: option.name,
+    versionId: version.id,
+    attribution: ATTRIBUTION,
+    recipe: version.recipe as Recipe,
+    site: ctx.site!,
+    metrics: (ev?.metrics ?? {}) as Record<string, number>,
+    compliance: (ev?.compliance ?? { results: [], test: false, compliant: true }) as PdfInput['compliance'],
+    yield: (ev?.yield ?? {}) as PdfInput['yield'],
+    thumbnail,
+  });
 }
 
 export async function runExport(db: Db, cfg: Config, storage: Storage, exportId: string): Promise<void> {
@@ -100,7 +65,7 @@ export async function runExport(db: Db, cfg: Config, storage: Storage, exportId:
     let body: Uint8Array;
     let type: string;
     if (ex.kind === 'pdf') {
-      body = await renderPdf(db, cfg, ex.recipeVersionId);
+      body = await renderPdf(db, cfg, ex.recipeVersionId, storage);
       type = 'application/pdf';
     } else {
       const payload = await buildIfcPayload(db, cfg, ex.recipeVersionId);

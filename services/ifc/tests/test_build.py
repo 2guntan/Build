@@ -272,3 +272,23 @@ def test_body_size_limit(monkeypatch):
     r = small.post("/ifc/validate", content=b"x" * 2000, headers={"content-type": "application/x-step"})
     assert r.status_code == 413
     assert main.MAX_BODY_BYTES == 50 * 1024 * 1024
+
+
+def test_stepped_storey_uses_its_own_footprint():
+    payload = {
+        "project": {"id": "prj_s", "name": "P", "optionName": "A", "versionId": "ver_s"},
+        "site": {"origin": {"lon": -17.4677, "lat": 14.7167, "crs": "EPSG:32628"}, "originUtm": [234285.72, 1628446.44], "northAngle": 0, "plot": [[0, 0], [40, 0], [40, 30], [0, 30]]},
+        "blocks": [{
+            "id": "blk_S", "name": "Bloc S", "footprint": [[5, 5], [35, 5], [35, 25], [5, 25]], "heightM": 9.0,
+            "storeys": [
+                {"index": 0, "elevationM": 0, "heightM": 3, "areaM2": 600, "use": "retail"},
+                {"index": 1, "elevationM": 3, "heightM": 3, "areaM2": 600, "use": "office"},
+                {"index": 2, "elevationM": 6, "heightM": 3, "areaM2": 336, "use": "office", "footprint": [[8, 8], [32, 8], [32, 22], [8, 22]]},
+            ],
+        }],
+    }
+    r = client.post("/ifc/build", json=payload)
+    assert r.status_code == 200, r.text
+    model = open_ifc(r.content)
+    profiles = [p for p in model.by_type("IfcArbitraryClosedProfileDef") if "R+2" in (p.ProfileName or "")]
+    assert profiles, "stepped storey should get its own profile"

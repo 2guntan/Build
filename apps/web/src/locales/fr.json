@@ -8,7 +8,8 @@
     "cancel": "Annuler",
     "back": "Retour",
     "next": "Suivant",
-    "language": "Langue"
+    "language": "Langue",
+    "theme": "Thème clair / sombre"
   },
   "auth": {
     "login": "Connexion",
@@ -24,11 +25,21 @@
   "projects": {
     "title": "Projets",
     "new": "Nouveau projet",
-    "empty": "Aucun projet. Créez votre première étude de faisabilité.",
+    "empty": "Testez en quelques minutes ce qui peut se construire sur une parcelle : règles, volumes, ensoleillement, bilan et export IFC.",
     "plotArea": "Parcelle",
     "bestMargin": "Meilleure marge",
     "noPlot": "Parcelle à définir",
-    "open": "Ouvrir"
+    "open": "Ouvrir",
+    "subtitle": "Études de capacité et de faisabilité",
+    "search": "Rechercher un projet",
+    "demo": "Projet de démonstration",
+    "emptyTitle": "Bienvenue dans Feasibility Studio",
+    "step1": "Dessinez ou importez la parcelle",
+    "step2": "Générez des volumes conformes avec l'assistant",
+    "step3": "Comparez, ajustez et exportez",
+    "options_one": "{{count}} option",
+    "options_other": "{{count}} options",
+    "noYield": "prix à saisir"
   },
   "wizard": {
     "title": "Nouveau projet",
@@ -54,7 +65,8 @@
     "ruleSet": "Jeu de règles",
     "create": "Créer et importer le contexte",
     "creating": "Création…",
-    "summary": "{{n}} sommets · {{p}} m de périmètre"
+    "summary": "{{n}} sommets · {{p}} m de périmètre",
+    "editHint": "Glissez un sommet pour l'ajuster, ou un point orange au milieu d'une limite pour en ajouter un."
   },
   "edge": {
     "front": "Avant (voie)",
@@ -87,7 +99,9 @@
     "noPlot": "Ce projet n'a pas encore de parcelle.",
     "preview": "Vérifier l'IFC",
     "context": "Contexte",
-    "attribution": "Bâtiments : Google Open Buildings, Overture, © OpenStreetMap. Terrain : Copernicus DEM."
+    "attribution": "Bâtiments : Google Open Buildings, Overture, © OpenStreetMap. Terrain : Copernicus DEM.",
+    "renameHint": "Double-cliquez pour renommer",
+    "optionCreated": "{{name}} créée"
   },
   "assistant": {
     "placeholder": "Décrivez le projet : « Immeuble R+5 mixte, commerces en RDC, ~6 500 m² »",
@@ -100,7 +114,15 @@
     "unavailable": "Assistant non configuré : ajoutez ANTHROPIC_API_KEY côté serveur.",
     "steps": "Étapes",
     "compliant": "Conforme",
-    "nonCompliant": "Non conforme"
+    "nonCompliant": "Non conforme",
+    "welcome": "Décrivez votre projet",
+    "welcomeHint": "L'assistant lit la parcelle et les règles, génère des variantes conformes avec le solveur et explique les limites. Rien n'est modifié tant que vous ne retenez pas une variante.",
+    "ex1": "Immeuble mixte R+5, commerces en rez-de-chaussée, maximiser la SDP",
+    "ex2": "Deux bâtiments de logements séparés, bien ensoleillés",
+    "ex3": "Quelle règle limite la hauteur ici ? Propose la variante la plus haute possible",
+    "preview": "Aperçu 3D",
+    "hidePreview": "Masquer",
+    "recommended": "recommandée"
   },
   "tools": {
     "get_site_summary": "Lecture de la parcelle",
@@ -117,7 +139,8 @@
     "uses": "Usages par niveau",
     "floors": "niveaux",
     "nonCompliantStudy": "Étude non conforme (autoriser les dépassements)",
-    "buildTime": "builder + règles + bilan : {{ms}} ms"
+    "buildTime": "builder + règles + bilan : {{ms}} ms",
+    "global": "Paramètres communs"
   },
   "use": {
     "retail": "Commerce",
@@ -153,7 +176,21 @@
     "marginOnCost": "Marge sur coût",
     "costPerM2": "Coût / m² vendable",
     "enterPrices": "Saisissez vos prix et coûts dans les réglages : aucune valeur de marché n'est inventée.",
-    "missing": "Manquant : {{list}}"
+    "missing": "Manquant : {{list}}",
+    "areas": "Surfaces",
+    "enterNow": "Saisir les hypothèses",
+    "sensitivity": "Sensibilité de la marge",
+    "priceVsCost": "Prix ↓ / Coûts →",
+    "costBase": "Coûts",
+    "priceBase": "Prix",
+    "key": {
+      "salePricePerM2": "prix de vente",
+      "buildCostPerM2": "coûts de construction",
+      "landCost": "foncier",
+      "softCostRatio": "frais annexes",
+      "parkingCostPerSpace": "coût du stationnement",
+      "unitSizesM2": "surfaces des logements"
+    }
   },
   "metrics": {
     "gfa": "SDP",
@@ -194,5 +231,132 @@
     "currency": "Devise",
     "ruleSet": "Jeu de règles",
     "members": "Membres"
+  },
+  "viewport": {
+    "views": "Vues",
+    "frame": "Recadrer (F)",
+    "screenshot": "Capture d'écran",
+    "tools": "Outils",
+    "select": "Sélection et poignées",
+    "move": "Déplacer",
+    "rotate": "Pivoter",
+    "addBlock": "Ajouter un bloc",
+    "duplicate": "Dupliquer le bloc",
+    "delete": "Supprimer le bloc",
+    "layers": "Calques",
+    "basemap": "Fond de carte",
+    "satellite": "Satellite",
+    "streets": "Plan",
+    "none": "Aucun",
+    "style": "Rendu",
+    "realistic": "Réaliste",
+    "byUse": "Par usage",
+    "dimensions": "Cotes et reculs",
+    "grid": "Grille",
+    "north": "Nord",
+    "handlesHint": "Glissez les poignées orange pour redimensionner, la flèche bleue pour changer le nombre de niveaux",
+    "tilesUnavailable": "Fond de carte indisponible (réseau)",
+    "quality": "Qualité",
+    "qAuto": "Auto",
+    "qHigh": "Haute",
+    "qLow": "Basse",
+    "demoContext": "Bâtiments voisins : données de démonstration synthétiques"
+  },
+  "block": {
+    "name": "Nom du bloc",
+    "addUse": "Usage",
+    "usesHint": "Les lignes du bas l'emportent sur celles du haut pour un même niveau.",
+    "use": "Usage",
+    "from": "Du niveau",
+    "to": "au niveau",
+    "top": "Dernier",
+    "efficiency": "Rendement",
+    "stepBacks": "Retraits d'étages",
+    "addStepBack": "Retrait",
+    "stepBacksHint": "Aucun retrait : tous les niveaux ont la même emprise. Ajoutez un retrait pour un socle et une tour, ou des attiques.",
+    "fromFloor": "À partir de",
+    "inset": "retrait de"
+  },
+  "shortcuts": {
+    "title": "Raccourcis clavier",
+    "select": "Sélection et poignées",
+    "move": "Déplacer le bloc",
+    "rotate": "Pivoter le bloc",
+    "add": "Ajouter un bloc",
+    "duplicate": "Dupliquer le bloc",
+    "delete": "Supprimer le bloc",
+    "undo": "Annuler",
+    "redo": "Rétablir",
+    "frame": "Recadrer",
+    "views": "Vues 3D, plan, S, E, N, O",
+    "deselect": "Désélectionner",
+    "palette": "Palette de commandes",
+    "help": "Cette aide"
+  },
+  "palette": {
+    "title": "Palette de commandes",
+    "placeholder": "Rechercher une commande…",
+    "empty": "Aucune commande",
+    "open": "Rechercher",
+    "design": "Conception",
+    "go": "Aller à",
+    "prefs": "Préférences"
+  },
+  "history": {
+    "title": "Historique",
+    "current": "Actuelle",
+    "restore": "Restaurer",
+    "restored": "Version restaurée",
+    "kind": {
+      "user": "Modification",
+      "slider": "Réglage",
+      "agent": "Assistant"
+    }
+  },
+  "share": {
+    "title": "Partager",
+    "intro": "Créez un lien de présentation en lecture seule pour un client ou un investisseur. Il ne donne accès à aucune modification.",
+    "validity": "Validité",
+    "days": "{{n}} jours",
+    "create": "Créer et copier le lien",
+    "copied": "Lien copié",
+    "copy": "Copier",
+    "open": "Ouvrir",
+    "revoke": "Révoquer",
+    "none": "Aucun lien actif.",
+    "until": "jusqu'au {{date}}"
+  },
+  "export": {
+    "ifcHint": "Maquette pour Archicad et Revit, géoréférencée",
+    "pdfHint": "Synthèse d'une page avec vue 3D et bilan",
+    "pngHint": "Image de la vue 3D actuelle",
+    "ifcReady": "Fichier IFC prêt",
+    "pdfReady": "Synthèse PDF prête"
+  },
+  "templates": {
+    "bar": "Barre",
+    "double_bar": "Double barre",
+    "l_shape": "En L",
+    "u_shape": "En U",
+    "courtyard": "Cour",
+    "towers": "Plots / tours",
+    "custom": "Sur mesure",
+    "podium_tower": "Socle + tour"
+  },
+  "shared": {
+    "subtitle": "Présentation en lecture seule",
+    "unavailable": "Ce lien n'est plus valide",
+    "unavailableHint": "Il a expiré ou a été révoqué. Demandez un nouveau lien à son auteur.",
+    "fullscreen": "Plein écran"
+  },
+  "members": {
+    "role": "Rôle",
+    "owner": "Propriétaire",
+    "editor": "Éditeur",
+    "viewer": "Lecteur",
+    "remove": "Retirer",
+    "add": "Ajouter",
+    "added": "Membre ajouté",
+    "hint": "La personne doit déjà avoir un compte. Les lecteurs voient les projets sans pouvoir les modifier."
   }
 }

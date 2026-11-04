@@ -8,7 +8,8 @@
     "cancel": "Cancel",
     "back": "Back",
     "next": "Next",
-    "language": "Language"
+    "language": "Language",
+    "theme": "Light / dark theme"
   },
   "auth": {
     "login": "Sign in",
@@ -24,11 +25,21 @@
   "projects": {
     "title": "Projects",
     "new": "New project",
-    "empty": "No projects yet. Create your first feasibility study.",
+    "empty": "Test what can be built on a plot in minutes: rules, massing, sunlight, yield and IFC export.",
     "plotArea": "Plot",
     "bestMargin": "Best margin",
     "noPlot": "Plot not set",
-    "open": "Open"
+    "open": "Open",
+    "subtitle": "Capacity and feasibility studies",
+    "search": "Search projects",
+    "demo": "Demo project",
+    "emptyTitle": "Welcome to Feasibility Studio",
+    "step1": "Draw or import the plot",
+    "step2": "Generate compliant massing with the assistant",
+    "step3": "Compare, tweak and export",
+    "options_one": "{{count}} option",
+    "options_other": "{{count}} options",
+    "noYield": "enter prices"
   },
   "wizard": {
     "title": "New project",
@@ -54,7 +65,8 @@
     "ruleSet": "Rule set",
     "create": "Create and import context",
     "creating": "Creating…",
-    "summary": "{{n}} vertices · {{p}} m perimeter"
+    "summary": "{{n}} vertices · {{p}} m perimeter",
+    "editHint": "Drag a vertex to adjust it, or an orange midpoint to add one."
   },
   "edge": {
     "front": "Front (street)",
@@ -87,7 +99,9 @@
     "noPlot": "This project has no plot yet.",
     "preview": "Check IFC",
     "context": "Context",
-    "attribution": "Buildings: Google Open Buildings, Overture, © OpenStreetMap. Terrain: Copernicus DEM."
+    "attribution": "Buildings: Google Open Buildings, Overture, © OpenStreetMap. Terrain: Copernicus DEM.",
+    "renameHint": "Double-click to rename",
+    "optionCreated": "{{name}} created"
   },
   "assistant": {
     "placeholder": "Describe the project: \"G+5 mixed use, retail ground floor, ~6,500 m²\"",
@@ -100,7 +114,15 @@
     "unavailable": "Assistant not configured: set ANTHROPIC_API_KEY on the server.",
     "steps": "Steps",
     "compliant": "Compliant",
-    "nonCompliant": "Not compliant"
+    "nonCompliant": "Not compliant",
+    "welcome": "Describe your project",
+    "welcomeHint": "The assistant reads the plot and the rules, generates compliant options with the solver and explains the limits. Nothing changes until you pick an option.",
+    "ex1": "Mixed-use G+5, retail ground floor, maximise GFA",
+    "ex2": "Two separate residential buildings with good sunlight",
+    "ex3": "Which rule limits the height here? Propose the tallest option possible",
+    "preview": "3D preview",
+    "hidePreview": "Hide",
+    "recommended": "recommended"
   },
   "tools": {
     "get_site_summary": "Reading the plot",
@@ -117,7 +139,8 @@
     "uses": "Uses per floor",
     "floors": "floors",
     "nonCompliantStudy": "Non-compliant study (allow breaches)",
-    "buildTime": "builder + rules + yield: {{ms}} ms"
+    "buildTime": "builder + rules + yield: {{ms}} ms",
+    "global": "Shared parameters"
   },
   "use": {
     "retail": "Retail",
@@ -153,7 +176,21 @@
     "marginOnCost": "Margin on cost",
     "costPerM2": "Cost / sellable m²",
     "enterPrices": "Enter your prices and costs in settings: no market figures are invented.",
-    "missing": "Missing: {{list}}"
+    "missing": "Missing: {{list}}",
+    "areas": "Areas",
+    "enterNow": "Enter assumptions",
+    "sensitivity": "Margin sensitivity",
+    "priceVsCost": "Price ↓ / Cost →",
+    "costBase": "Cost",
+    "priceBase": "Price",
+    "key": {
+      "salePricePerM2": "sale prices",
+      "buildCostPerM2": "build costs",
+      "landCost": "land",
+      "softCostRatio": "soft costs",
+      "parkingCostPerSpace": "parking cost",
+      "unitSizesM2": "unit sizes"
+    }
   },
   "metrics": {
     "gfa": "GFA",
@@ -194,5 +231,132 @@
     "currency": "Currency",
     "ruleSet": "Rule set",
     "members": "Members"
+  },
+  "viewport": {
+    "views": "Views",
+    "frame": "Frame (F)",
+    "screenshot": "Screenshot",
+    "tools": "Tools",
+    "select": "Select and handles",
+    "move": "Move",
+    "rotate": "Rotate",
+    "addBlock": "Add block",
+    "duplicate": "Duplicate block",
+    "delete": "Delete block",
+    "layers": "Layers",
+    "basemap": "Basemap",
+    "satellite": "Satellite",
+    "streets": "Streets",
+    "none": "None",
+    "style": "Rendering",
+    "realistic": "Realistic",
+    "byUse": "By use",
+    "dimensions": "Dimensions and setbacks",
+    "grid": "Grid",
+    "north": "North",
+    "handlesHint": "Drag the orange handles to resize, the blue arrow to change the number of floors",
+    "tilesUnavailable": "Basemap unavailable (network)",
+    "quality": "Quality",
+    "qAuto": "Auto",
+    "qHigh": "High",
+    "qLow": "Low",
+    "demoContext": "Neighbouring buildings: synthetic demo data"
+  },
+  "block": {
+    "name": "Block name",
+    "addUse": "Use",
+    "usesHint": "Lower rows override upper rows on the same floor.",
+    "use": "Use",
+    "from": "From floor",
+    "to": "to floor",
+    "top": "Top",
+    "efficiency": "Efficiency",
+    "stepBacks": "Step-backs",
+    "addStepBack": "Step-back",
+    "stepBacksHint": "No step-back: every floor has the same footprint. Add one for a podium and tower, or setback penthouses.",
+    "fromFloor": "From",
+    "inset": "inset by"
+  },
+  "shortcuts": {
+    "title": "Keyboard shortcuts",
+    "select": "Select and handles",
+    "move": "Move block",
+    "rotate": "Rotate block",
+    "add": "Add block",
+    "duplicate": "Duplicate block",
+    "delete": "Delete block",
+    "undo": "Undo",
+    "redo": "Redo",
+    "frame": "Frame",
+    "views": "Views 3D, plan, S, E, N, W",
+    "deselect": "Deselect",
+    "palette": "Command palette",
+    "help": "This help"
+  },
+  "palette": {
+    "title": "Command palette",
+    "placeholder": "Search a command…",
+    "empty": "No command",
+    "open": "Search",
+    "design": "Design",
+    "go": "Go to",
+    "prefs": "Preferences"
+  },
+  "history": {
+    "title": "History",
+    "current": "Current",
+    "restore": "Restore",
+    "restored": "Version restored",
+    "kind": {
+      "user": "Edit",
+      "slider": "Adjustment",
+      "agent": "Assistant"
+    }
+  },
+  "share": {
+    "title": "Share",
+    "intro": "Create a read-only presentation link for a client or investor. It gives no editing access.",
+    "validity": "Validity",
+    "days": "{{n}} days",
+    "create": "Create and copy link",
+    "copied": "Link copied",
+    "copy": "Copy",
+    "open": "Open",
+    "revoke": "Revoke",
+    "none": "No active link.",
+    "until": "until {{date}}"
+  },
+  "export": {
+    "ifcHint": "Model for Archicad and Revit, georeferenced",
+    "pdfHint": "One-page summary with 3D view and yield",
+    "pngHint": "Image of the current 3D view",
+    "ifcReady": "IFC file ready",
+    "pdfReady": "PDF summary ready"
+  },
+  "templates": {
+    "bar": "Bar",
+    "double_bar": "Double bar",
+    "l_shape": "L-shape",
+    "u_shape": "U-shape",
+    "courtyard": "Courtyard",
+    "towers": "Point blocks",
+    "custom": "Custom",
+    "podium_tower": "Podium + tower"
+  },
+  "shared": {
+    "subtitle": "Read-only presentation",
+    "unavailable": "This link is no longer valid",
+    "unavailableHint": "It expired or was revoked. Ask its author for a new link.",
+    "fullscreen": "Full screen"
+  },
+  "members": {
+    "role": "Role",
+    "owner": "Owner",
+    "editor": "Editor",
+    "viewer": "Viewer",
+    "remove": "Remove",
+    "add": "Add",
+    "added": "Member added",
+    "hint": "The person must already have an account. Viewers can see projects but not edit them."
   }
 }
