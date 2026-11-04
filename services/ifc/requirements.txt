@@ -1,0 +1,11 @@
+# Runtime
+fastapi==0.162.0
+starlette==1.10.0
+uvicorn==0.54.0
+pydantic==2.14.2
+ifcopenshell==0.9.0.post1
+# IDS validation (not bundled in the ifcopenshell wheel; separate PyPI package)
+ifctester==0.9.0
+# Tests
+pytest==9.2.0
+httpx==0.28.1

@@ -1,0 +1,51 @@
+{
+  "name": "@fs/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=../../.env src/main.ts",
+    "start": "tsx src/main.ts",
+    "test": "vitest run",
+    "test:unit": "vitest run --exclude test/**",
+    "typecheck": "tsc -p tsconfig.json",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx --env-file-if-exists=../../.env src/db/migrate.ts",
+    "db:seed": "tsx --env-file-if-exists=../../.env src/db/seed.ts",
+    "bench:agent": "tsx --env-file-if-exists=../../.env ../../benchmarks/agent/run.ts",
+    "load:region": "tsx --env-file-if-exists=../../.env ../../scripts/load-region.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.4.0",
+    "@aws-sdk/client-s3": "^3.1161.0",
+    "@aws-sdk/s3-request-presigner": "^3.1161.0",
+    "@fastify/cors": "^11.4.0",
+    "@fs/api-contract": "workspace:*",
+    "@fs/builder": "workspace:*",
+    "@fs/geometry": "workspace:*",
+    "@fs/recipe": "workspace:*",
+    "@fs/rules": "workspace:*",
+    "@fs/solver": "workspace:*",
+    "@fs/sun": "workspace:*",
+    "@fs/yield": "workspace:*",
+    "better-auth": "^1.7.17",
+    "drizzle-orm": "^0.45.4",
+    "fast-json-patch": "^3.1.1",
+    "fastify": "^5.12.8",
+    "geotiff": "^3.0.5",
+    "pdf-lib": "^1.17.1",
+    "pg": "^8.23.1",
+    "pg-boss": "^12.38.0",
+    "tsx": "^4.23.15",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@fs/config": "workspace:*",
+    "@testcontainers/postgresql": "^12.2.1",
+    "@types/pg": "^8.23.1",
+    "drizzle-kit": "^0.31.11",
+    "testcontainers": "^12.2.1",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
+  }
+}

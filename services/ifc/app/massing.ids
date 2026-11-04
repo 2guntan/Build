@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='utf-8'?>
+<ids xmlns="http://standards.buildingsmart.org/IDS" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://standards.buildingsmart.org/IDS http://standards.buildingsmart.org/IDS/1.0/ids.xsd">
+    <info>
+        <title>Feasibility Studio massing export</title>
+        <version>1.0</version>
+        <description>Minimum information requirements for massing IFC4 files produced by services/ifc.</description>
+        <author>feasibility-studio@example.com</author>
+        <purpose>Massing handoff to Archicad / Revit</purpose>
+    </info>
+    <specifications>
+        <specification name="Site exists" ifcVersion="IFC4" identifier="FS-01" description="The file contains at least one IfcSite.">
+            <applicability minOccurs="1" maxOccurs="unbounded">
+                <entity>
+                    <name>
+                        <simpleValue>IFCSITE</simpleValue>
+                    </name>
+                </entity>
+            </applicability>
+            <requirements>
+                <attribute cardinality="required">
+                    <name>
+                        <simpleValue>GlobalId</simpleValue>
+                    </name>
+                </attribute>
+            </requirements>
+        </specification>
+        <specification name="Storeys are named" ifcVersion="IFC4" identifier="FS-02" description="Every IfcBuildingStorey has a Name.">
+            <applicability minOccurs="1" maxOccurs="unbounded">
+                <entity>
+                    <name>
+                        <simpleValue>IFCBUILDINGSTOREY</simpleValue>
+                    </name>
+                </entity>
+            </applicability>
+            <requirements>
+                <attribute cardinality="required">
+                    <name>
+                        <simpleValue>Name</simpleValue>
+                    </name>
+                </attribute>
+            </requirements>
+        </specification>
+        <specification name="Spaces carry a net floor area" ifcVersion="IFC4" identifier="FS-03" description="Every IfcSpace has Qto_SpaceBaseQuantities.NetFloorArea.">
+            <applicability minOccurs="0" maxOccurs="unbounded">
+                <entity>
+                    <name>
+                        <simpleValue>IFCSPACE</simpleValue>
+                    </name>
+                </entity>
+            </applicability>
+            <requirements>
+                <property dataType="IFCAREAMEASURE" cardinality="required">
+                    <propertySet>
+                        <simpleValue>Qto_SpaceBaseQuantities</simpleValue>
+                    </propertySet>
+                    <baseName>
+                        <simpleValue>NetFloorArea</simpleValue>
+                    </baseName>
+                </property>
+            </requirements>
+        </specification>
+    </specifications>
+</ids>
