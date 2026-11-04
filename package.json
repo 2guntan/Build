@@ -1,0 +1,40 @@
+{
+  "name": "feasibility-studio",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "turbo run dev --parallel --filter=@fs/web --filter=@fs/api",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "db:migrate": "pnpm --filter @fs/api db:migrate",
+    "db:seed": "pnpm --filter @fs/api db:seed",
+    "db:generate": "pnpm --filter @fs/api db:generate",
+    "bench:agent": "pnpm --filter @fs/api bench:agent",
+    "load:region": "pnpm --filter @fs/api load:region"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "@types/node": "^22.20.5",
+    "eslint": "^9.39.0",
+    "prettier": "^3.6.2",
+    "turbo": "^2.6.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.0",
+    "vitest": "^3.2.4"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "cpu-features",
+      "ssh2",
+      "protobufjs"
+    ]
+  }
+}

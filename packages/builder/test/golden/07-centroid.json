@@ -1,0 +1,109 @@
+{
+  "name": "07-centroid",
+  "plot": [
+    [
+      0,
+      0
+    ],
+    [
+      40,
+      0
+    ],
+    [
+      40,
+      40
+    ],
+    [
+      0,
+      40
+    ]
+  ],
+  "edgeClasses": [
+    "front",
+    "side",
+    "rear",
+    "side"
+  ],
+  "buildable": [
+    [
+      0,
+      0
+    ],
+    [
+      40,
+      0
+    ],
+    [
+      40,
+      40
+    ],
+    [
+      0,
+      40
+    ]
+  ],
+  "recipe": {
+    "schemaVersion": 1,
+    "optionId": "opt_golden",
+    "site": {
+      "origin": {
+        "lon": -17.4677,
+        "lat": 14.7167,
+        "crs": "EPSG:32628"
+      },
+      "plotRef": "plot_golden",
+      "northAngle": 0
+    },
+    "programme": {
+      "targetUse": "residential"
+    },
+    "params": {},
+    "blocks": [
+      {
+        "id": "A",
+        "name": "A",
+        "footprint": {
+          "kind": "rect",
+          "anchor": "buildable.centroid",
+          "width": 10,
+          "depth": 10,
+          "rotation": 0,
+          "offsetU": 0,
+          "offsetV": 0
+        },
+        "floors": 10,
+        "floorHeights": {
+          "ground": 4,
+          "typical": 3
+        },
+        "uses": [
+          {
+            "floors": [
+              0,
+              "last"
+            ],
+            "use": "residential",
+            "efficiency": 0.8
+          }
+        ],
+        "roof": {
+          "kind": "flat",
+          "accessible": false
+        }
+      }
+    ],
+    "parking": {
+      "kind": "none",
+      "spaces": 0,
+      "area": "auto"
+    },
+    "meta": {
+      "createdBy": "user"
+    }
+  },
+  "expected": {
+    "gfaM2": 1000,
+    "footprintAreaM2": 100,
+    "maxHeightM": 31
+  }
+}

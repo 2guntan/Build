@@ -1,0 +1,20 @@
+{
+  "name": "@fs/sun",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": { "@fs/geometry": "workspace:*", "@fs/recipe": "workspace:*", "@fs/builder": "workspace:*", "suncalc": "^1.9.0", "@types/suncalc": "^1.9.2" },
+  "devDependencies": {
+    "@fs/config": "workspace:*",
+    "fast-check": "^4.3.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

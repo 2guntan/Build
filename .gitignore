@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.turbo/
+.env
+.env.local
+*.log
+coverage/
+playwright-report/
+test-results/
+__pycache__/
+.venv/
+.pytest_cache/
+.storage/
+benchmarks/agent/results/
+apps/api/.data/

@@ -1,0 +1,54 @@
+{
+  "note": "Five reference plots for solver tests and the agent benchmark. Local metres; origin in central Dakar. Context heights are synthetic.",
+  "origin": { "lon": -17.4677, "lat": 14.7167, "crs": "EPSG:32628" },
+  "plots": [
+    {
+      "id": "corner-small",
+      "name": "Small corner plot",
+      "zone": "test-r",
+      "plot": [[0, 0], [22, 0], [22, 26], [0, 26]],
+      "edgeClasses": ["front", "side", "rear", "front"],
+      "context": []
+    },
+    {
+      "id": "deep-narrow",
+      "name": "Deep narrow plot",
+      "zone": "test-c",
+      "plot": [[0, 0], [14, 0], [14, 48], [0, 48]],
+      "edgeClasses": ["front", "side", "rear", "side"],
+      "context": [
+        { "id": "n1", "ring": [[-12, 0], [-1, 0], [-1, 30], [-12, 30]], "heightM": 9 },
+        { "id": "n2", "ring": [[15, 0], [27, 0], [27, 30], [15, 30]], "heightM": 12 }
+      ]
+    },
+    {
+      "id": "large-irregular",
+      "name": "Large irregular plot",
+      "zone": "test-r",
+      "plot": [[0, 0], [70, 0], [78, 40], [52, 76], [-6, 60]],
+      "edgeClasses": ["front", "side", "rear", "rear", "side"],
+      "context": []
+    },
+    {
+      "id": "sloped",
+      "name": "Sloped plot",
+      "zone": "test-r",
+      "plot": [[0, 0], [40, 0], [40, 35], [0, 35]],
+      "edgeClasses": ["front", "side", "rear", "side"],
+      "slopePercent": 8,
+      "context": []
+    },
+    {
+      "id": "tall-neighbours",
+      "name": "Plot with tall neighbours",
+      "zone": "test-c",
+      "plot": [[0, 0], [36, 0], [36, 30], [0, 30]],
+      "edgeClasses": ["front", "side", "rear", "side"],
+      "context": [
+        { "id": "t1", "ring": [[-20, -2], [-3, -2], [-3, 32], [-20, 32]], "heightM": 45 },
+        { "id": "t2", "ring": [[0, 34], [36, 34], [36, 50], [0, 50]], "heightM": 38 },
+        { "id": "t3", "ring": [[40, 0], [55, 0], [55, 30], [40, 30]], "heightM": 30 }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "jurisdiction": {
+    "id": "sn-dakar",
+    "name": "Dakar (TEST — non officiel)",
+    "country": "SN",
+    "version": "0.0.1-test",
+    "effective": "2026-01-01"
+  },
+  "test": true,
+  "disclaimer": "TEST — NON OFFICIEL. Valeurs fictives pour les tests du moteur. Elles ne proviennent d'aucun document d'urbanisme et ne doivent jamais servir à une étude réelle. Le jeu de règles officiel doit être transcrit et relu par un urbaniste (jalon M2).",
+  "sources": [
+    {
+      "id": "test",
+      "title": "Jeu de règles de test (aucune source officielle)",
+      "url": "about:blank"
+    }
+  ],
+  "zones": [
+    {
+      "id": "test-r",
+      "name": "Zone TEST résidentielle",
+      "name_en": "TEST residential zone",
+      "rules": [
+        { "id": "t-cov", "type": "max_coverage", "max": 0.6, "severity": "blocking", "cite": { "source": "test", "article": "T1" } },
+        { "id": "t-far", "type": "max_far", "max": 3.0, "severity": "blocking", "cite": { "source": "test", "article": "T2" } },
+        { "id": "t-height", "type": "max_height", "maxMetres": 26, "maxStoreys": 8, "severity": "blocking", "cite": { "source": "test", "article": "T3" } },
+        { "id": "t-front", "type": "setback", "edge": "front", "min": "max(5, H/4)", "severity": "blocking", "cite": { "source": "test", "article": "T4" } },
+        { "id": "t-side", "type": "setback", "edge": "side", "min": "max(3, H/6)", "severity": "blocking", "cite": { "source": "test", "article": "T5" } },
+        { "id": "t-rear", "type": "setback", "edge": "rear", "min": "max(4, H/5)", "severity": "blocking", "cite": { "source": "test", "article": "T6" } },
+        { "id": "t-sep", "type": "min_separation", "min": "max(6, H/3)", "severity": "blocking", "cite": { "source": "test", "article": "T7" } },
+        { "id": "t-park", "type": "parking_ratio", "perUse": { "residential": { "perUnit": 1 }, "retail": { "per100m2": 2 }, "office": { "per100m2": 1.5 } }, "severity": "warning", "cite": { "source": "test", "article": "T8" } },
+        { "id": "t-open", "type": "min_open_space", "min": 0.2, "severity": "warning", "cite": { "source": "test", "article": "T9" } }
+      ]
+    },
+    {
+      "id": "test-c",
+      "name": "Zone TEST centre-ville",
+      "name_en": "TEST city-centre zone",
+      "rules": [
+        { "id": "c-cov", "type": "max_coverage", "max": 0.8, "severity": "blocking", "cite": { "source": "test", "article": "C1" } },
+        { "id": "c-far", "type": "max_far", "max": 5.0, "severity": "blocking", "cite": { "source": "test", "article": "C2" } },
+        { "id": "c-height", "type": "max_height", "maxStoreys": 12, "severity": "blocking", "cite": { "source": "test", "article": "C3" } },
+        { "id": "c-front", "type": "setback", "edge": "front", "min": 0, "severity": "blocking", "cite": { "source": "test", "article": "C4" } },
+        { "id": "c-side", "type": "setback", "edge": "side", "min": "max(0, H/8)", "severity": "blocking", "cite": { "source": "test", "article": "C5" } },
+        { "id": "c-rear", "type": "setback", "edge": "rear", "min": "max(4, H/4)", "severity": "blocking", "cite": { "source": "test", "article": "C6" } },
+        { "id": "c-sep", "type": "min_separation", "min": "max(8, H/2)", "severity": "blocking", "cite": { "source": "test", "article": "C7" } }
+      ]
+    }
+  ]
+}
