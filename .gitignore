@@ -13,3 +13,4 @@ __pycache__/
 .storage/
 benchmarks/agent/results/
 apps/api/.data/
+apps/web/e2e/screenshots/

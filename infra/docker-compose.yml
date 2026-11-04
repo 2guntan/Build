@@ -1,0 +1,48 @@
+name: feasibility-studio
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: fs
+      POSTGRES_PASSWORD: fs
+      POSTGRES_DB: fs
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fs -d fs"]
+      interval: 3s
+      retries: 20
+
+  minio:
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: fsminio
+      MINIO_ROOT_PASSWORD: fsminio-secret
+    ports: ["9000:9000", "9001:9001"]
+    volumes: [miniodata:/data]
+
+  ifc-service:
+    build: ../services/ifc
+    ports: ["8000:8000"]
+    # Internal service: in production expose it only on the private network.
+
+  api:
+    profiles: ["full"]
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    env_file: [../.env]
+    environment:
+      DATABASE_URL: postgres://fs:fs@postgres:5432/fs
+      IFC_SERVICE_URL: http://ifc-service:8000
+      S3_ENDPOINT: http://minio:9000
+    ports: ["3001:3001"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      ifc-service: { condition: service_started }
+
+volumes:
+  pgdata:
+  miniodata:

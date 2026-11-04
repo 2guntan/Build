@@ -1,13 +1,25 @@
 import { and, desc, eq, inArray } from 'drizzle-orm';
 import type { Recipe } from '@fs/recipe';
+import { siteFrame, toFrame } from '@fs/builder';
+import { bbox } from '@fs/geometry';
 import type { Config } from '../config.js';
 import type { Db } from '../db/client.js';
 import { designOption, evaluation, recipeVersion } from '../db/schema.js';
 import { ProblemError } from '../http/problem.js';
 import { evaluateRecipe, parseRecipeOrThrow, projectContext, type ProjectContext } from './evaluation.js';
 
+/** Starter block sized to the buildable area (60 % of its extent), so a new option starts compliant on setbacks. */
+function starterSize(ctx: ProjectContext): { w: number; d: number } {
+  if (!ctx.site) return { w: 20, d: 12 };
+  const f = siteFrame(ctx.site);
+  const b = bbox(ctx.site.buildable.map((p) => toFrame(f, p)));
+  const r = (v: number) => Math.max(6, Math.floor(v * 2) / 2);
+  return { w: r(Math.min(40, (b.maxX - b.minX) * 0.6)), d: r(Math.min(16, (b.maxY - b.minY) * 0.6)) };
+}
+
 export function starterRecipe(optionId: string, ctx: ProjectContext): Recipe {
   const p = ctx.plot;
+  const size = starterSize(ctx);
   return {
     schemaVersion: 1,
     optionId,
@@ -19,8 +31,8 @@ export function starterRecipe(optionId: string, ctx: ProjectContext): Recipe {
     programme: { targetUse: 'mixed' },
     params: {
       floorsA: { value: 4, min: 1, max: 12, step: 1, label: 'Niveaux bloc A' },
-      widthA: { value: 20, min: 6, max: 80, step: 0.5, unit: 'm', label: 'Largeur bloc A' },
-      depthA: { value: 12, min: 6, max: 40, step: 0.5, unit: 'm', label: 'Profondeur bloc A' },
+      widthA: { value: size.w, min: 6, max: 80, step: 0.5, unit: 'm', label: 'Largeur bloc A' },
+      depthA: { value: size.d, min: 6, max: 40, step: 0.5, unit: 'm', label: 'Profondeur bloc A' },
       groundFloorHeight: { value: 4.5, min: 3, max: 6, step: 0.1, unit: 'm', label: 'Hauteur RDC' },
       typicalFloorHeight: { value: 3.1, min: 2.8, max: 4, step: 0.1, unit: 'm', label: 'Hauteur étage courant' },
     },

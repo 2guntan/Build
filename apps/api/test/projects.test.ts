@@ -51,6 +51,7 @@ describe('projects, plot and options', () => {
     const o1 = await c.get(`/api/v1/options/${optionId}`);
     expect(o1.body.head).toBeTruthy();
     expect(o1.body.evaluation.compliance.test).toBe(true);
+    expect(o1.body.evaluation.compliance.compliant).toBe(true); // starter block fits the buildable area
     const recipe = structuredClone(o1.body.head.recipe);
     recipe.params.floorsA.value = 8;
     // A client-side result is never trusted: the server recomputes the evaluation.
@@ -58,8 +59,8 @@ describe('projects, plot and options', () => {
     expect(save.status).toBe(201);
     const o2 = await c.get(`/api/v1/options/${optionId}`);
     expect(o2.body.head.id).toBe(save.body.version.id);
-    // 20 × 12 m rect × 8 floors; millimetre rounding of the rotated frame adds a few cm².
-    expect(o2.body.evaluation.metrics.gfaM2).toBeCloseTo(240 * 8, 0);
+    // Starter block: 4 floors; doubling the floors doubles the GFA.
+    expect(o2.body.evaluation.metrics.gfaM2).toBeCloseTo(o1.body.evaluation.metrics.gfaM2 * 2, 0); // 4 → 8 floors
     expect(o2.body.head.parentId).toBe(o1.body.head.id);
     // Stale parent → conflict
     const stale = await c.post(`/api/v1/options/${optionId}/versions`, { recipe, authorKind: 'slider', parentId: o1.body.head.id });
