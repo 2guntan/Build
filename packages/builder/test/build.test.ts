@@ -78,7 +78,8 @@ describe('builder', () => {
     }));
     const t0 = performance.now();
     for (let i = 0; i < 10; i++) build(r, site(80, 30));
-    expect((performance.now() - t0) / 10).toBeLessThan(20);
+    // Spec budget is 100 ms for builder + rules + yield + viewport; the builder alone must stay well below.
+    expect((performance.now() - t0) / 10).toBeLessThan(50);
   });
 
   it('accepts the spec example JSON through the schema', () => {

@@ -1,0 +1,116 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      agent_benchmark:
+        description: Run the agent benchmark (uses API tokens)
+        type: boolean
+        default: false
+
+jobs:
+  check:
+    name: Lint, typecheck, unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - name: Shared packages and web tests
+        run: pnpm turbo run test --filter=./packages/* --filter=@fs/web
+      - name: Build web and check that no secret reaches the bundle
+        run: |
+          pnpm --filter @fs/web build
+          if grep -q '"@anthropic-ai' apps/web/package.json; then echo "Claude SDK must not be a web dependency"; exit 1; fi
+          if grep -rEl 'sk-ant-|ANTHROPIC_API_KEY|api\.anthropic\.com' apps/web/dist; then echo "Secret or Claude API reference found in the web bundle"; exit 1; fi
+          node -e "const fs=require('fs'),z=require('zlib'),h=fs.readFileSync('apps/web/dist/index.html','utf8');let s=0;for(const m of h.matchAll(/assets\/[^\"]+\.js/g))s+=z.gzipSync(fs.readFileSync('apps/web/dist/'+m[0])).length;console.log('initial JS gz KB',(s/1024).toFixed(0));if(s>600*1024)process.exit(1)"
+
+  api:
+    name: API tests (Testcontainers, PostGIS)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @fs/api test
+
+  ifc:
+    name: IFC service tests
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: services/ifc } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12', cache: pip }
+      - run: pip install -r requirements.txt
+      - run: pytest -q
+
+  e2e:
+    name: End-to-end (Playwright)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    needs: [check]
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env: { POSTGRES_USER: fs, POSTGRES_PASSWORD: fs, POSTGRES_DB: fs }
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U fs -d fs" --health-interval 3s --health-retries 20
+    env:
+      DATABASE_URL: postgres://fs:fs@localhost:5432/fs
+      API_PUBLIC_URL: http://localhost:5173
+      WEB_ORIGIN: http://localhost:5173
+      BETTER_AUTH_SECRET: ci-only-secret-0123456789abcdef0123456789
+      AGENT_OFFLINE: 'true'
+      IFC_SERVICE_URL: http://localhost:8000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12', cache: pip }
+      - run: pnpm install --frozen-lockfile
+      - run: pip install -r services/ifc/requirements.txt
+      - run: npm i -g playwright@1 && npx playwright install --with-deps chromium
+      - name: Start IFC service, API and web
+        run: |
+          (cd services/ifc && uvicorn app.main:app --port 8000 &)
+          (cd apps/api && npx tsx src/main.ts > /tmp/api.log 2>&1 &)
+          (cd apps/web && npx vite --port 5173 --strictPort > /tmp/web.log 2>&1 &)
+          for i in $(seq 1 60); do curl -sf localhost:3001/health && curl -sf localhost:5173 >/dev/null && break; sleep 2; done
+      - run: NODE_PATH=$(npm root -g) node e2e/full-flow.mjs
+        working-directory: apps/web
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-screenshots
+          path: apps/web/e2e/screenshots
+
+  agent-benchmark:
+    name: Agent benchmark
+    if: github.event_name == 'workflow_dispatch' && inputs.agent_benchmark
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm bench:agent
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: agent-benchmark
+          path: benchmarks/agent/results

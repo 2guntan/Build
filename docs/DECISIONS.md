@@ -65,3 +65,42 @@ Newest last. Each entry: decision — reason.
 25. **`max_sun` priority** uses a proxy score (GFA × open share ÷ height factor) inside the solver; the
     real sun study runs afterwards via `run_sun_study`. **`max_margin`** falls back to GFA when yield
     assumptions are incomplete, and says so (`scoreBasis: gfa_fallback`).
+
+## M3–M9
+
+26. **Starter option**: a new option gets one rect block sized to 60 % of the buildable area's extent
+    (4 floors, retail ground floor, residential above), so it starts compliant on setbacks.
+27. **Concurrent edits**: `POST /options/:id/versions` takes the `parentId` the client edited from and
+    returns 409 if the head moved; the web client then re-saves on top of the latest head.
+28. **Agent tools work on a run-local draft.** `propose_massing`, `edit_recipe` and `set_params` create
+    candidates in the run; nothing is stored until the user accepts one (`POST /agent-runs/:id/accept`).
+    The proposed candidate is the last one produced. Claude is asked to name its recommendation.
+29. **Agent model client is injectable.** `AnthropicModelClient` (Claude API: prompt caching on tools and
+    system prompt, explicit `effort: high`, server-side refusal fallback `"default"`) or
+    `ScriptedModelClient` (deterministic, used by tests and `AGENT_OFFLINE=true`). Without a key and
+    without offline mode, agent routes return 503 `AGENT_UNAVAILABLE`.
+30. **Token budget** counts input (including cache reads/writes) + output tokens over the last 24 h per
+    organization; concurrency = runs in `queued`/`running`. Cost is logged with configurable per-MTok prices.
+31. **Cross-organization access returns 404**, not 403, so ids from other organizations are not disclosed.
+    Viewers get 403 on writes inside their own organization.
+32. **Storage**: S3 (MinIO locally) when `S3_ENDPOINT` is set, otherwise local files with HMAC-signed
+    download URLs served by the API (15-minute expiry, same as S3 presigned URLs).
+33. **Jobs**: pg-boss queues `site.import` and `export.build`. With `JOBS_ENABLED=false` (tests) jobs run inline.
+34. **Site import** excludes reference buildings whose centroid lies inside the plot (existing structures
+    on site are assumed to be demolished); de-duplication keeps the lower `priority` value at IoU > 0.5;
+    footprints are simplified (~0.3 m) to keep the context payload small.
+35. **Terrain** is read from the public Copernicus GLO-30 Cloud-Optimized GeoTIFF for the bbox window and
+    stored as a JSON heightmap (simpler than re-encoding a GeoTIFF). If the DEM host is unreachable the
+    import still succeeds and records `terrain: unavailable`. Massing is placed at z = 0 in v1 (no slope
+    adaptation; the sloped reference plot is flat in the benchmark).
+36. **PDF summary** uses `pdf-lib` with standard fonts (WinAnsi), so no headless browser is needed.
+37. **IFC exports are validated** with the IDS checks of the IFC service; a failed check fails the export.
+    Storey names follow local usage (`RDC`, `R+1`…). The IFC header timestamp is fixed for byte-stable files.
+38. **Basemap**: `VITE_BASEMAP_STYLE` must point to a provider style in production; the fallback uses OSM
+    raster tiles for development only. Address search uses Nominatim on explicit user action.
+39. **Low-end devices**: if the viewport runs below 30 fps, shadows are turned off and the pixel ratio drops
+    to 1 (WebGL antialiasing cannot be toggled after context creation).
+40. **Phone layout**: panels become drawers below 1280 px; the full editing UI stays reachable but is not
+    optimised for phones in v1.
+41. **Agent benchmark** runs the agent loop directly on the reference plots (no database), so it measures
+    Claude + tools + solver. The scripted model gives a harness baseline (100 % compliance, 70 % full).

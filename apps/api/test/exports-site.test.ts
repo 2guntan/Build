@@ -9,6 +9,10 @@ const ifcStub = createServer((req, res) => {
   let body = '';
   req.on('data', (c) => (body += c));
   req.on('end', () => {
+    if (req.url === '/ifc/validate') {
+      res.writeHead(200, { 'content-type': 'application/json' });
+      return res.end(JSON.stringify({ ok: true, checks: [] }));
+    }
     received = JSON.parse(body);
     res.writeHead(200, { 'content-type': 'application/x-step' });
     res.end('ISO-10303-21;\nEND-ISO-10303-21;\n');

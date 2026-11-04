@@ -114,6 +114,13 @@ export async function runExport(db: Db, cfg: Config, storage: Storage, exportId:
       if (!res.ok) throw new Error(`IFC service ${res.status}: ${(await res.text()).slice(0, 300)}`);
       body = new Uint8Array(await res.arrayBuffer());
       type = 'application/x-step';
+      // IDS checks on the generated file; a failed check blocks the export.
+      const v = await fetch(`${cfg.IFC_SERVICE_URL}/ifc/validate`, { method: 'POST', headers: { 'content-type': 'application/x-step' }, body })
+        .then((r) => (r.ok ? (r.json() as Promise<{ ok: boolean; checks?: { id: string; ok: boolean }[] }>) : null))
+        .catch(() => null);
+      if (v && v.ok === false) {
+        throw new Error(`IDS validation failed: ${(v.checks ?? []).filter((c) => !c.ok).map((c) => c.id).join(', ')}`);
+      }
     }
     const key = `exports/${ex.recipeVersionId}/${ex.id}.${ex.kind}`;
     await storage.put(key, body, type);

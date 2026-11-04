@@ -1,0 +1,328 @@
+{
+  "note": "30 cases over the 5 reference plots (data/reference-plots.json), TEST rule set. Expectations are properties.",
+  "cases": [
+    {
+      "id": "01-corner-small-fr",
+      "plot": "corner-small",
+      "lang": "fr",
+      "prompt": "Immeuble de logements le plus haut possible.",
+      "expect": {
+        "compliant": true,
+        "groundUse": "residential"
+      }
+    },
+    {
+      "id": "02-corner-small-fr",
+      "plot": "corner-small",
+      "lang": "fr",
+      "prompt": "Immeuble mixte R+4 avec commerces au rez-de-chaussée.",
+      "expect": {
+        "compliant": true,
+        "groundUse": "retail",
+        "maxFloors": 5
+      }
+    },
+    {
+      "id": "03-corner-small-fr",
+      "plot": "corner-small",
+      "lang": "fr",
+      "prompt": "Bureaux, environ 858 m² de surface de plancher.",
+      "expect": {
+        "compliant": true,
+        "groundUse": "office",
+        "gfaRange": [
+          429,
+          1287
+        ]
+      }
+    },
+    {
+      "id": "04-corner-small-fr",
+      "plot": "corner-small",
+      "lang": "fr",
+      "prompt": "Deux bâtiments de logements séparés, maximiser la SDP.",
+      "expect": {
+        "compliant": true,
+        "minBlocks": 1
+      }
+    },
+    {
+      "id": "05-corner-small-fr",
+      "plot": "corner-small",
+      "lang": "fr",
+      "prompt": "Quelle est la règle qui limite la hauteur ici ? Propose un projet R+7.",
+      "expect": {
+        "compliant": true,
+        "mentionsRule": true
+      }
+    },
+    {
+      "id": "06-deep-narrow-fr",
+      "plot": "deep-narrow",
+      "lang": "fr",
+      "prompt": "Immeuble de logements le plus haut possible.",
+      "expect": {
+        "compliant": true,
+        "groundUse": "residential"
+      }
+    },
+    {
+      "id": "07-deep-narrow-fr",
+      "plot": "deep-narrow",
+      "lang": "fr",
+      "prompt": "Immeuble mixte R+4 avec commerces au rez-de-chaussée.",
+      "expect": {
+        "compliant": true,
+        "groundUse": "retail",
+        "maxFloors": 5
+      }
+    },
+    {
+      "id": "08-deep-narrow-fr",
+      "plot": "deep-narrow",
+      "lang": "fr",
+      "prompt": "Bureaux, environ 1008 m² de surface de plancher.",
+      "expect": {
+        "compliant": true,
+        "groundUse": "office",
+        "gfaRange": [
+          504,
+          1512
+        ]
+      }
+    },
+    {
+      "id": "09-deep-narrow-fr",
+      "plot": "deep-narrow",
+      "lang": "fr",
+      "prompt": "Deux bâtiments de logements séparés, maximiser la SDP.",
+      "expect": {
+        "compliant": true,
+        "minBlocks": 1
+      }
+    },
+    {
+      "id": "10-deep-narrow-fr",
+      "plot": "deep-narrow",
+      "lang": "fr",
+      "prompt": "Quelle est la règle qui limite la hauteur ici ? Propose un projet R+7.",
+      "expect": {
+        "compliant": true,
+        "mentionsRule": true
+      }
+    },
+    {
+      "id": "11-large-irregular-fr",
+      "plot": "large-irregular",
+      "lang": "fr",
+      "prompt": "Immeuble de logements le plus haut possible.",
+      "expect": {
+        "compliant": true,
+        "groundUse": "residential"
+      }
+    },
+    {
+      "id": "12-large-irregular-fr",
+      "plot": "large-irregular",
+      "lang": "fr",
+      "prompt": "Immeuble mixte R+4 avec commerces au rez-de-chaussée.",
+      "expect": {
+        "compliant": true,
+        "groundUse": "retail",
+        "maxFloors": 5
+      }
+    },
+    {
+      "id": "13-large-irregular-fr",
+      "plot": "large-irregular",
+      "lang": "fr",
+      "prompt": "Bureaux, environ 6900 m² de surface de plancher.",
+      "expect": {
+        "compliant": true,
+        "groundUse": "office",
+        "gfaRange": [
+          3450,
+          10350
+        ]
+      }
+    },
+    {
+      "id": "14-large-irregular-fr",
+      "plot": "large-irregular",
+      "lang": "fr",
+      "prompt": "Deux bâtiments de logements séparés, maximiser la SDP.",
+      "expect": {
+        "compliant": true,
+        "blocks": 2
+      }
+    },
+    {
+      "id": "15-large-irregular-fr",
+      "plot": "large-irregular",
+      "lang": "fr",
+      "prompt": "Quelle est la règle qui limite la hauteur ici ? Propose un projet R+7.",
+      "expect": {
+        "compliant": true,
+        "mentionsRule": true
+      }
+    },
+    {
+      "id": "16-large-irregular-fr",
+      "plot": "large-irregular",
+      "lang": "fr",
+      "prompt": "Hôtel avec un rez-de-chaussée commercial, priorité à la marge.",
+      "expect": {
+        "compliant": true,
+        "groundUse": "retail"
+      }
+    },
+    {
+      "id": "17-sloped-fr",
+      "plot": "sloped",
+      "lang": "fr",
+      "prompt": "Immeuble de logements le plus haut possible.",
+      "expect": {
+        "compliant": true,
+        "groundUse": "residential"
+      }
+    },
+    {
+      "id": "18-sloped-fr",
+      "plot": "sloped",
+      "lang": "fr",
+      "prompt": "Immeuble mixte R+4 avec commerces au rez-de-chaussée.",
+      "expect": {
+        "compliant": true,
+        "groundUse": "retail",
+        "maxFloors": 5
+      }
+    },
+    {
+      "id": "19-sloped-fr",
+      "plot": "sloped",
+      "lang": "fr",
+      "prompt": "Bureaux, environ 2100 m² de surface de plancher.",
+      "expect": {
+        "compliant": true,
+        "groundUse": "office",
+        "gfaRange": [
+          1050,
+          3150
+        ]
+      }
+    },
+    {
+      "id": "20-sloped-fr",
+      "plot": "sloped",
+      "lang": "fr",
+      "prompt": "Deux bâtiments de logements séparés, maximiser la SDP.",
+      "expect": {
+        "compliant": true,
+        "blocks": 2
+      }
+    },
+    {
+      "id": "21-sloped-fr",
+      "plot": "sloped",
+      "lang": "fr",
+      "prompt": "Quelle est la règle qui limite la hauteur ici ? Propose un projet R+7.",
+      "expect": {
+        "compliant": true,
+        "mentionsRule": true
+      }
+    },
+    {
+      "id": "22-tall-neighbours-fr",
+      "plot": "tall-neighbours",
+      "lang": "fr",
+      "prompt": "Immeuble de logements le plus haut possible.",
+      "expect": {
+        "compliant": true,
+        "groundUse": "residential"
+      }
+    },
+    {
+      "id": "23-tall-neighbours-fr",
+      "plot": "tall-neighbours",
+      "lang": "fr",
+      "prompt": "Immeuble mixte R+4 avec commerces au rez-de-chaussée.",
+      "expect": {
+        "compliant": true,
+        "groundUse": "retail",
+        "maxFloors": 5
+      }
+    },
+    {
+      "id": "24-tall-neighbours-fr",
+      "plot": "tall-neighbours",
+      "lang": "fr",
+      "prompt": "Bureaux, environ 1620 m² de surface de plancher.",
+      "expect": {
+        "compliant": true,
+        "groundUse": "office",
+        "gfaRange": [
+          810,
+          2430
+        ]
+      }
+    },
+    {
+      "id": "25-tall-neighbours-fr",
+      "plot": "tall-neighbours",
+      "lang": "fr",
+      "prompt": "Deux bâtiments de logements séparés, maximiser la SDP.",
+      "expect": {
+        "compliant": true,
+        "blocks": 2
+      }
+    },
+    {
+      "id": "26-tall-neighbours-fr",
+      "plot": "tall-neighbours",
+      "lang": "fr",
+      "prompt": "Quelle est la règle qui limite la hauteur ici ? Propose un projet R+7.",
+      "expect": {
+        "compliant": true,
+        "mentionsRule": true
+      }
+    },
+    {
+      "id": "27-large-irregular-en",
+      "plot": "large-irregular",
+      "lang": "en",
+      "prompt": "Mixed-use building, retail ground floor, as much GFA as allowed.",
+      "expect": {
+        "compliant": true,
+        "groundUse": "retail"
+      }
+    },
+    {
+      "id": "28-large-irregular-en",
+      "plot": "large-irregular",
+      "lang": "en",
+      "prompt": "Residential towers, best sunlight.",
+      "expect": {
+        "compliant": true
+      }
+    },
+    {
+      "id": "29-tall-neighbours-en",
+      "plot": "tall-neighbours",
+      "lang": "en",
+      "prompt": "Mixed-use building, retail ground floor, as much GFA as allowed.",
+      "expect": {
+        "compliant": true,
+        "groundUse": "retail"
+      }
+    },
+    {
+      "id": "30-tall-neighbours-en",
+      "plot": "tall-neighbours",
+      "lang": "en",
+      "prompt": "Residential towers, best sunlight.",
+      "expect": {
+        "compliant": true
+      }
+    }
+  ]
+}
